@@ -1,0 +1,2850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>Linkt Toll Allocator — Tall Tech / Focal Glow</title>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-2:#111111;
+    --card:#131313;
+    --card-2:#171717;
+    --line:#242424;
+    --line-2:#2e2e2e;
+    --ink:#ffffff;
+    --ink-2:#e7e7e7;
+    --muted:#8a8a8a;
+    --muted-2:#5a5a5a;
+    --accent:#3b82f6;
+    --accent-soft:#1e3a8a;
+    --ok:#22c55e;
+    --ok-soft:#06311a;
+    --bad:#ef4444;
+    --bad-soft:#3a0e0e;
+    --warn:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 "Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:-0.005em;
+  }
+  a{color:inherit}
+
+  /* ---------- top nav ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;background:rgba(10,10,10,.85);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:inline-flex;align-items:center;height:32px;gap:0}
+  .logo img{display:block;height:32px;width:auto}
+  .logo-fallback{
+    font-weight:900;font-size:22px;letter-spacing:-0.04em;color:var(--ink);line-height:1;
+    display:inline-flex;align-items:flex-start;
+  }
+  .logo-fallback .slash{color:var(--accent);margin:0 -1px}
+  .logo-fallback .tm{font-size:9px;font-weight:600;color:var(--muted-2);margin-left:2px;margin-top:2px;letter-spacing:0}
+  .topbar .meta{display:flex;align-items:center;gap:22px;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+  .dots{display:flex;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:#2a2a2a}
+  .dot.active{background:var(--ink)}
+  .section-label{color:var(--ink);font-weight:600}
+  .build-stamp{
+    font-size:10px;letter-spacing:.08em;text-transform:none;
+    color:var(--muted-2);padding:4px 10px;border:1px solid var(--line);border-radius:999px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .reload-btn{
+    background:transparent;color:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;
+    padding:6px 14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .reload-btn:hover{background:var(--card-2);border-color:var(--muted)}
+  .update-banner{
+    position:sticky;top:65px;z-index:19;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:10px 20px;background:var(--accent-soft);color:var(--ink);
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  .update-banner button{
+    background:var(--ink);color:var(--bg);border:none;border-radius:999px;
+    padding:6px 14px;font-weight:600;cursor:pointer;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:88px 32px 72px;
+    max-width:1280px;margin:0 auto;
+    text-align:center;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin-bottom:28px;
+  }
+  .hero h1{
+    font-size:clamp(48px, 9vw, 128px);
+    line-height:.92;
+    font-weight:900;
+    letter-spacing:-0.04em;
+    margin:0 0 20px 0;
+    text-transform:uppercase;
+  }
+  .hero h1 .solid{color:var(--ink)}
+  .hero h1 .outline{
+    color:transparent;
+    -webkit-text-stroke:2px var(--ink);
+    text-stroke:2px var(--ink);
+  }
+  .hero .sub{
+    max-width:620px;margin:0 auto 36px;
+    color:var(--muted);font-size:16px;line-height:1.6;
+  }
+  .cta{
+    display:inline-flex;align-items:center;justify-content:space-between;
+    background:var(--ink);color:#000;border:0;
+    padding:22px 32px;border-radius:999px;
+    width:min(460px, 90vw);
+    font-weight:700;font-size:13px;letter-spacing:.18em;
+    text-transform:uppercase;cursor:pointer;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .cta:hover{transform:translateY(-1px);background:#f0f0f0}
+  .cta .arrow{
+    width:32px;height:32px;border-radius:50%;background:#000;color:#fff;
+    display:grid;place-items:center;font-size:14px;
+  }
+  .scroll-hint{
+    margin-top:48px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted-2);display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+
+  /* ---------- tab nav (restyled as chip/pill bar) ---------- */
+  .tabs{
+    max-width:1280px;margin:0 auto;padding:0 32px;
+    display:flex;gap:8px;flex-wrap:wrap;
+    border-top:1px solid var(--line);
+    padding-top:28px;
+  }
+  .tabs button{
+    background:transparent;color:var(--muted);border:1px solid var(--line);
+    padding:10px 18px;border-radius:999px;cursor:pointer;
+    font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    transition:all .15s ease;
+    font-family:inherit;
+  }
+  .tabs button:hover{color:var(--ink);border-color:var(--line-2)}
+  .tabs button.active{background:var(--ink);color:#000;border-color:var(--ink)}
+  .tabs .spacer{flex:1}
+  .tabs .cfg{
+    background:transparent;color:var(--muted);border:1px solid var(--line);
+    padding:10px 16px;border-radius:999px;cursor:pointer;
+    font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  }
+  .tabs .cfg:hover{color:var(--ink);border-color:var(--line-2)}
+  .tabs .folder{
+    display:inline-flex;align-items:center;gap:8px;
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    padding:10px 14px;border-radius:999px;cursor:pointer;
+    font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    font-family:inherit;transition:all .15s ease;
+  }
+  .tabs .folder:hover{color:var(--ink);border-color:var(--line-2);transform:none;background:transparent}
+  .tabs .folder.connected{color:var(--ok);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05)}
+  .tabs .folder .pulse{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+  .tabs .folder.connected .pulse{background:var(--ok);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 2s ease-out infinite}
+  .tabs .folder .fname{text-transform:none;letter-spacing:normal;font-weight:500;color:var(--ink-2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}
+    70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}
+    100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}
+  }
+  .save-status{
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted-2);margin-left:4px;transition:color .2s ease;
+  }
+  .save-status.saving{color:var(--accent)}
+  .save-status.saved{color:var(--ok)}
+  .save-status.error{color:var(--bad)}
+
+  /* ---------- trip sub-filter ---------- */
+  .subtabs{display:inline-flex;gap:6px;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:4px}
+  .subtabs button{
+    background:transparent;color:var(--muted);border:0;padding:8px 14px;
+    border-radius:999px;cursor:pointer;
+    font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    font-family:inherit;display:inline-flex;align-items:center;gap:8px;
+  }
+  .subtabs button:hover{color:var(--ink);background:transparent;transform:none}
+  .subtabs button.active{background:var(--ink);color:#000}
+  .subtabs button .count{
+    background:var(--line);color:var(--ink-2);
+    padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0;
+  }
+  .subtabs button.active .count{background:#000;color:#fff}
+  .subtabs.work button.active{background:var(--ok);color:#000}
+  .subtabs.pers button.active{background:var(--bad);color:#fff}
+
+  /* ---------- statement cards ---------- */
+  .stmt-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px;margin-bottom:12px;display:grid;
+    grid-template-columns: 1fr auto;gap:20px;align-items:center;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .stmt-card:hover{border-color:var(--line-2)}
+  .stmt-card .meta{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+  .stmt-card .period{font-size:20px;font-weight:800;letter-spacing:-0.02em;color:var(--ink)}
+  .stmt-card .saved-at{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stmt-card .stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+  .stmt-card .stat{display:flex;flex-direction:column;gap:2px}
+  .stmt-card .stat .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stmt-card .stat .v{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-0.02em}
+  .stmt-card .stat .v.ok{color:var(--ok)}
+  .stmt-card .stat .v.bad{color:var(--bad)}
+  .stmt-card .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .stmt-empty{padding:56px 24px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:16px;background:var(--bg-2)}
+  .stmt-selected{border-color:var(--accent)!important;background:rgba(59,130,246,.06)!important}
+  @media (max-width: 900px){
+    .stmt-card{grid-template-columns:1fr}
+  }
+
+  /* ---------- save-statement inline form ---------- */
+  .save-stmt{
+    display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .save-stmt .f{flex:1;min-width:220px}
+  .save-stmt input[type=text]{background:var(--card)}
+
+  /* ---------- trip filter bar ---------- */
+  .trip-filters{
+    display:flex;gap:10px 12px;align-items:flex-end;flex-wrap:wrap;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;margin:14px 0 4px;
+  }
+  .trip-filters .f{display:flex;flex-direction:column;gap:4px;min-width:140px}
+  .trip-filters .f.grow{flex:1;min-width:200px}
+  .trip-filters .f label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .trip-filters input, .trip-filters select{
+    background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:7px 10px;border-radius:10px;font-size:13px;min-height:34px
+  }
+  .trip-filters input:focus, .trip-filters select:focus{outline:none;border-color:var(--accent)}
+  .trip-filters .clear-wrap button{padding:7px 14px;font-size:13px}
+
+  /* ---------- main ---------- */
+  main{padding:24px 32px 120px;max-width:1280px;margin:0 auto}
+  section[data-panel]{margin-top:24px}
+  .hidden{display:none !important}
+
+  .panel-header{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    margin:24px 0 28px;gap:16px;flex-wrap:wrap;
+  }
+  .panel-header .tag{
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:8px;
+  }
+  .panel-header h2{
+    font-size:clamp(32px, 4.5vw, 56px);
+    font-weight:900;letter-spacing:-0.03em;line-height:1;
+    margin:0;text-transform:uppercase;
+  }
+  .panel-header h2 .outline{
+    color:transparent;-webkit-text-stroke:1.5px var(--ink);
+  }
+  .panel-header .lead{color:var(--muted);max-width:520px;font-size:14px;line-height:1.6;margin:0}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:28px;margin-bottom:16px;
+  }
+  .card h3{
+    margin:0 0 6px 0;font-size:13px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);font-weight:700;
+  }
+  .card h3 + .title{
+    font-size:22px;font-weight:800;letter-spacing:-0.02em;
+    margin:0 0 8px 0;color:var(--ink);
+  }
+  .card p.lead{color:var(--muted);margin:0 0 22px 0;font-size:14px;line-height:1.6}
+
+  /* ---------- forms ---------- */
+  .row{display:grid;gap:12px}
+  .row.cols-2{grid-template-columns:repeat(2,1fr)}
+  .row.cols-3{grid-template-columns:repeat(3,1fr)}
+  .row.cols-4{grid-template-columns:repeat(4,1fr)}
+  label{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;display:block;margin-bottom:8px;
+  }
+  input[type=text], input[type=number], input[type=time], input[type=email], select, textarea{
+    width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+    font:inherit;background:var(--bg-2);color:var(--ink);
+    font-family:inherit;
+  }
+  input:focus, select:focus, textarea:focus{outline:none;border-color:var(--accent)}
+  textarea{min-height:72px}
+  input[type=file]{display:none}
+
+  /* ---------- buttons ---------- */
+  button, .btn{
+    background:var(--ink);color:#000;border:0;
+    padding:12px 20px;border-radius:999px;cursor:pointer;
+    font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:inherit;
+    transition:all .15s ease;
+  }
+  button:hover, .btn:hover{background:#f0f0f0;transform:translateY(-1px)}
+  button.secondary{background:transparent;color:var(--ink);border:1px solid var(--line-2)}
+  button.secondary:hover{background:var(--card-2);border-color:var(--muted);transform:none}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  button.ghost:hover{color:var(--ink);border-color:var(--line-2);background:transparent;transform:none}
+  button.danger{background:transparent;color:var(--bad);border:1px solid var(--bad-soft)}
+  button.danger:hover{background:var(--bad-soft);transform:none}
+  button:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+  /* ---------- tables ---------- */
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th, td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{
+    background:#0f0f0f;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);font-weight:700;
+    position:sticky;top:0;
+  }
+  tbody tr{transition:background .1s}
+  tbody tr:hover{background:var(--card-2)}
+  tbody tr:last-child td{border-bottom:0}
+  td input[type=text], td input[type=email], td select{
+    padding:8px 10px;font-size:12px;border-radius:8px;
+    width:100%;min-width:0;box-sizing:border-box;
+  }
+
+  /* ---------- driver table column sizing ---------- */
+  #driverTable{table-layout:fixed;min-width:1560px}
+  #driverTable th:nth-child(1), #driverTable td:nth-child(1){width:110px}   /* Rego */
+  #driverTable th:nth-child(2), #driverTable td:nth-child(2){width:110px}   /* Tag number */
+  #driverTable th:nth-child(3), #driverTable td:nth-child(3){width:160px}   /* Vehicle */
+  #driverTable th:nth-child(4), #driverTable td:nth-child(4){width:160px}   /* Driver name */
+  #driverTable th:nth-child(5), #driverTable td:nth-child(5){width:110px}   /* Business */
+  #driverTable th:nth-child(6), #driverTable td:nth-child(6){width:160px}   /* Xero contact */
+  #driverTable th:nth-child(7), #driverTable td:nth-child(7){width:200px}   /* Email */
+  #driverTable th:nth-child(8), #driverTable td:nth-child(8){width:110px}   /* Account code */
+  #driverTable th:nth-child(9), #driverTable td:nth-child(9){width:130px}   /* Default rule */
+  #driverTable th:nth-child(10), #driverTable td:nth-child(10){width:200px} /* Actions */
+  #driverTable td input, #driverTable td select{width:100%}
+
+  /* ---------- chips ---------- */
+  .chip{
+    display:inline-block;padding:4px 12px;border-radius:999px;
+    font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    border:1px solid transparent;
+  }
+  .chip.work{background:var(--ok-soft);color:var(--ok);border-color:rgba(34,197,94,.2)}
+  .chip.pers{background:var(--bad-soft);color:var(--bad);border-color:rgba(239,68,68,.2)}
+  .chip.unknown{background:#3a2a00;color:var(--warn);border-color:rgba(245,158,11,.2)}
+
+  /* ---------- KPIs ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+  .kpi{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px;position:relative;overflow:hidden;
+  }
+  .kpi::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(400px 200px at 100% 0%, rgba(59,130,246,.08), transparent 60%);
+    pointer-events:none;
+  }
+  .kpi .lab{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:8px;
+  }
+  .kpi .v{font-size:36px;font-weight:900;color:var(--ink);letter-spacing:-0.03em;line-height:1}
+
+  /* ---------- days grid ---------- */
+  .grid-days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+  .grid-days .day{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:14px;
+  }
+  .grid-days .day .dname{
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:10px;
+  }
+
+  /* ---------- dropzone ---------- */
+  .drop{
+    border:2px dashed var(--line-2);border-radius:16px;padding:56px 24px;
+    text-align:center;color:var(--muted);background:var(--bg-2);
+    transition:all .2s ease;
+  }
+  .drop:hover{border-color:var(--muted);color:var(--ink-2)}
+  .drop.drag{border-color:var(--accent);background:rgba(59,130,246,.05);color:var(--ink)}
+  .drop strong{color:var(--ink);font-weight:700}
+  .drop a{color:var(--accent);font-weight:700;text-decoration:none}
+  .drop a:hover{text-decoration:underline}
+
+  /* ---------- misc ---------- */
+  .note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#fbbf24;padding:14px 16px;border-radius:12px;font-size:13px}
+  .ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#4ade80;padding:14px 16px;border-radius:12px;font-size:13px}
+  .error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:14px 16px;border-radius:12px;font-size:13px}
+  .small{font-size:12px}
+  .muted{color:var(--muted)}
+  .flex{display:flex;align-items:center;gap:10px}
+  .right{margin-left:auto}
+  .actions-bar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+  .subtle-sep{height:1px;background:var(--line);margin:20px 0}
+  .override-sel{font-size:11px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg-2);color:var(--ink)}
+  .pill{background:var(--card-2);color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:11px;margin-right:4px}
+  details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  details[open] summary{margin-bottom:12px}
+  code{background:var(--bg-2);border:1px solid var(--line);padding:2px 8px;border-radius:6px;font-size:12px;color:var(--ink-2)}
+  ol, ul{color:var(--ink-2);line-height:1.7}
+  ol li, ul li{margin-bottom:6px}
+
+  @media (max-width: 900px){
+    .topbar{padding:14px 20px}
+    .topbar .meta{gap:12px;font-size:10px}
+    .hero{padding:56px 20px 48px}
+    .tabs{padding:20px 20px 0}
+    main{padding:16px 20px 80px}
+    .card{padding:22px}
+    .row.cols-2,.row.cols-3,.row.cols-4{grid-template-columns:1fr}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid-days{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================== TOPBAR ============================================== -->
+<div class="topbar">
+  <div class="logo" aria-label="Talltech">
+    <img src="data:image/png;base64,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" alt=""
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';" />
+    <span class="logo-fallback" style="display:none">Tal<span class="slash">/</span>ltech<span class="tm">™</span></span>
+  </div>
+  <div class="meta">
+    <div class="dots" id="navDots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <span class="section-label" id="sectionLabel">Process</span>
+    <span class="build-stamp" id="buildStamp" title="This is the version of the app currently loaded in your browser. Claude rewrites the file on disk as you request changes — click Reload to fetch the latest from disk.">v<span id="buildVersion">2026-04-17.10</span></span>
+    <button class="reload-btn" id="btnReload" title="Reload the page from disk to pick up Claude's latest changes">↻ Reload</button>
+  </div>
+</div>
+<div class="update-banner" id="updateBanner" hidden>
+  <span>A newer version of this app is on disk. </span>
+  <button id="btnReloadBanner">Reload now</button>
+</div>
+
+<!-- ============================================== HERO ============================================== -->
+<div class="hero">
+  <div class="eyebrow">Tall Tech — Linkt Toll Allocator</div>
+  <h1>
+    <span class="outline">Work</span> <span class="solid">vs</span><br>
+    <span class="solid">Personal.</span>
+  </h1>
+  <p class="sub">One toll account, many drivers. Drop in your Linkt statement and this tool sorts every trip into work or personal, then builds a Xero-ready payment request for the drivers who owe back.</p>
+  <button class="cta" id="btnBeginWorkflow">
+    <span>Begin workflow</span>
+    <span class="arrow">→</span>
+  </button>
+  <div class="scroll-hint">— Scroll to begin —</div>
+</div>
+
+<!-- ============================================== TABS ============================================== -->
+<nav class="tabs" id="tabs">
+  <button data-tab="process" class="active">Process CSV</button>
+  <button data-tab="drivers">Drivers &amp; Tags</button>
+  <button data-tab="settings">Settings</button>
+  <button data-tab="statements">Statements</button>
+  <button data-tab="help">How it works</button>
+  <div class="spacer"></div>
+  <button class="folder" id="btnConnectFolder" title="Auto-save config to your Documents › Claude › Projects › Toll folder">
+    <span class="pulse"></span>
+    <span id="folderLabel">Connect toll folder</span>
+  </button>
+  <span class="save-status" id="saveStatus"></span>
+  <button class="cfg" id="btnExportConfig" title="Save drivers + settings to JSON">Save config</button>
+  <button class="cfg" id="btnImportConfig" title="Load drivers + settings from JSON">Load config</button>
+  <input type="file" id="fileConfig" accept="application/json" />
+</nav>
+
+<main>
+
+<!-- ============================================== PROCESS CSV ============================================== -->
+<section data-panel="process">
+
+  <div class="panel-header">
+    <div>
+      <div class="tag">Step 01 — Ingest</div>
+      <h2><span class="outline">Process</span> CSV</h2>
+    </div>
+    <p class="lead">Every trip gets classified against your working hours, commute windows, and per-driver rules. Override anything by hand.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="lab">Total trips</div><div class="v" id="kTrips">—</div></div>
+    <div class="kpi"><div class="lab">Work cost</div><div class="v" id="kWork">—</div></div>
+    <div class="kpi"><div class="lab">Personal cost</div><div class="v" id="kPers">—</div></div>
+    <div class="kpi"><div class="lab">Unmapped tags</div><div class="v" id="kUnmap">—</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Upload</h3>
+    <div class="title">Your Linkt statement</div>
+    <p class="lead">Drop the Linkt Detailed Statement — either the <strong>PDF</strong> you downloaded from the Linkt portal, or a <strong>CSV</strong> export. Columns (date, time, tag, trip, amount) are detected automatically.</p>
+    <div id="drop" class="drop">
+      <div><strong>Drag &amp; drop</strong> your PDF or CSV here, or <a href="#" id="pickFile">browse files</a></div>
+      <div class="small" style="margin-top:8px;color:var(--muted-2)">Supported: Linkt Detailed Statement (.pdf) · CSV export (.csv) · plain text (.txt). Processing happens entirely in your browser — nothing is uploaded.</div>
+    </div>
+    <input type="file" id="fileCsv" accept=".csv,.pdf,.txt,text/csv,application/pdf,text/plain" />
+    <div id="csvStatus" class="small" style="margin-top:12px"></div>
+
+    <details style="margin-top:18px">
+      <summary>Column mapping (advanced)</summary>
+      <div class="row cols-4" style="margin-top:14px">
+        <div><label>Date column</label><input type="text" id="colDate" placeholder="auto" /></div>
+        <div><label>Time column</label><input type="text" id="colTime" placeholder="auto" /></div>
+        <div><label>Tag / vehicle column</label><input type="text" id="colTag" placeholder="auto" /></div>
+        <div><label>Amount column</label><input type="text" id="colAmt" placeholder="auto" /></div>
+        <div><label>Trip description</label><input type="text" id="colDesc" placeholder="auto" /></div>
+        <div><label>Reference / trip ID</label><input type="text" id="colRef" placeholder="auto" /></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card" id="saveStmtCard" style="display:none">
+    <h3>Archive</h3>
+    <div class="title">Save this statement</div>
+    <p class="lead">Label the period so you can refer back to it later. Saved statements live in the <em>Statements</em> tab and (if a folder is connected) are also written to <code>statements/</code> in your toll folder.</p>
+    <div class="save-stmt">
+      <div class="f">
+        <label>Period label</label>
+        <input type="text" id="stmtPeriod" placeholder="e.g. Mar 2026" />
+      </div>
+      <div class="f">
+        <label>Notes (optional)</label>
+        <input type="text" id="stmtNotes" placeholder="e.g. Statement received 03 Apr 2026" />
+      </div>
+      <button id="btnSaveStatement">Save to archive</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="flex" style="margin-bottom:16px;flex-wrap:wrap;gap:14px">
+      <div>
+        <h3>Review</h3>
+        <div class="title">Classified trips</div>
+      </div>
+      <div class="right flex" style="flex-wrap:wrap;gap:10px">
+        <div class="subtabs" id="tripFilter">
+          <button data-filter="all" class="active">All <span class="count" id="cAll">0</span></button>
+          <button data-filter="work">Work <span class="count" id="cWork">0</span></button>
+          <button data-filter="personal">Personal <span class="count" id="cPers">0</span></button>
+        </div>
+        <button class="secondary" id="btnReclassify">Re-classify</button>
+        <button class="secondary" id="btnRepriceAll" title="Set all personal LCV trips to the CAR (Class 2) rate">Reprice personal as CAR</button>
+        <button class="ghost" id="btnClearReprice" title="Remove all CAR rate overrides and revert to original Linkt amounts">Clear CAR repricing</button>
+        <button class="ghost" id="btnClear">Clear</button>
+        <button id="btnExportXeroProcess" style="background:var(--ok);color:#000" disabled title="Export personal trips to Xero CSV">Export to Xero</button>
+      </div>
+    </div>
+
+    <div id="tripFilters" class="trip-filters">
+      <div class="f"><label>Date from</label><input type="date" id="fltDateFrom" /></div>
+      <div class="f"><label>Date to</label><input type="date" id="fltDateTo" /></div>
+      <div class="f"><label>Day</label>
+        <select id="fltDay">
+          <option value="">Any day</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+          <option value="0">Sunday</option>
+        </select>
+      </div>
+      <div class="f"><label>Tag</label><select id="fltTag"><option value="">Any tag</option></select></div>
+      <div class="f"><label>Driver</label><select id="fltDriver"><option value="">Any driver</option></select></div>
+      <div class="f grow"><label>Search trip</label><input type="text" id="fltQ" placeholder="e.g. Kedron, Murarrie…" /></div>
+      <div class="f clear-wrap">
+        <label>&nbsp;</label>
+        <button class="ghost" id="btnClearFilters" type="button">Clear filters</button>
+      </div>
+    </div>
+    <div id="fltSummary" class="small muted" style="margin:4px 2px 12px"></div>
+
+    <div class="table-wrap">
+      <table id="tripTable">
+        <thead>
+          <tr>
+            <th>Date / Time</th>
+            <th>Day</th>
+            <th>Tag</th>
+            <th>Driver</th>
+            <th>Trip</th>
+            <th style="text-align:right">Linkt Amt</th>
+            <th style="text-align:right">Charge</th>
+            <th>Rule</th>
+            <th>Class</th>
+            <th>Override</th>
+          </tr>
+        </thead>
+        <tbody><tr><td colspan="10" class="muted" style="text-align:center;padding:40px">No trips loaded yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================== DRIVERS ============================================== -->
+<section data-panel="drivers" class="hidden">
+  <div class="panel-header">
+    <div>
+      <div class="tag">Step 02 — Map</div>
+      <h2><span class="solid">Drivers</span> <span class="outline">&amp; Tags</span></h2>
+    </div>
+    <p class="lead">Link each toll tag to a driver and their Xero contact. When a toll on their tag is personal, the export creates a payment request to charge them back.</p>
+  </div>
+
+  <div class="card">
+    <div class="actions-bar">
+      <button id="btnAddDriver">+ Add driver</button>
+      <button class="secondary" id="btnAddMissing">Add unmapped tags from CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="driverTable">
+        <thead>
+          <tr>
+            <th>Rego</th>
+            <th>Tag number</th>
+            <th>Vehicle</th>
+            <th>Driver name</th>
+            <th>Business</th>
+            <th>Xero contact</th>
+            <th>Email</th>
+            <th>Account code</th>
+            <th>Default rule</th>
+            <th style="min-width:200px">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:16px">
+      <strong>Add</strong> a new driver with <em>+ Add driver</em>.
+      <strong>Move</strong> a driver to a different vehicle using <em>Change vehicle</em> in the row — enter the new tag / licence plate.
+      <strong>Remove</strong> a driver when they exit the organisation using <em>Remove</em> — past statements keep their original tag mapping.
+      Leave <em>Xero contact</em> blank to reuse the driver name.
+      <em>Account code</em> defaults to the global code in Settings.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================== SETTINGS ============================================== -->
+<section data-panel="settings" class="hidden">
+  <div class="panel-header">
+    <div>
+      <div class="tag">Step 03 — Configure</div>
+      <h2><span class="outline">Rules</span> <span class="solid">&amp; hours</span></h2>
+    </div>
+    <p class="lead">Classification is driven primarily by <strong>Route rules</strong> (deterministic — same toll gantry pair always classifies the same way). Working hours and commute windows are the fallback for trips that don't match a known route.</p>
+  </div>
+
+  <div class="card">
+    <h3>Route rules</h3>
+    <div class="title">Toll-route classification</div>
+    <p class="lead">Every Linkt trip has a fixed description (e.g. <code>Kedron to Bowen Hills</code>). This table classifies each known route as one of three classes:</p>
+    <ul style="margin:0 0 12px 18px;line-height:1.55">
+      <li><strong style="color:var(--bad)">Personal (commute corridor)</strong> — always personal. Use for the driver's home ↔ office drive (e.g. <code>Kedron to Bowen Hills</code>).</li>
+      <li><strong style="color:var(--ok)">Work (site / tunnel)</strong> — always work. Use for specific client / site / tunnel routes that are only driven for work (e.g. <code>Legacy Way West</code>).</li>
+      <li><strong>Commute (window-aware)</strong> — personal during the AM/PM commute windows below <em>and on weekends/public holidays</em>; work outside those windows. Use for motorway-through toll points that drivers pass through on both the daily commute and mid-day job runs (e.g. <code>Murarrie North</code>, <code>Kuraby South</code>).</li>
+    </ul>
+    <p class="small muted" style="margin:0 0 6px 0">Route rules take priority over working hours. A 07:45 Gateway Motorway toll on <code>Murarrie North</code> now classifies as <strong style="color:var(--bad)">PERSONAL</strong> (commute window), while an 11:20 Gateway Motorway toll on the same route classifies as <strong style="color:var(--ok)">WORK</strong>.</p>
+    <div class="actions-bar" style="margin:8px 0 16px 0">
+      <button id="btnAddRoute">+ Add route</button>
+      <button class="secondary" id="btnResetRoutes" title="Replace the current list with the built-in default set">Reset to defaults</button>
+    </div>
+    <div class="table-wrap">
+      <table id="routeTable">
+        <thead>
+          <tr>
+            <th>Trip description (contains, case-insensitive)</th>
+            <th style="width:140px">Class</th>
+            <th>Note</th>
+            <th style="width:110px">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:12px">
+      Matching is case-insensitive substring — "<code>Kedron to Bowen Hills</code>" matches any Linkt row whose description contains that phrase. Add new routes as they appear in statements. The first matching row wins, so put more specific patterns above general ones.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Working hours (fallback only)</h3>
+    <div class="title">Your week</div>
+    <p class="lead">Used only when a trip <strong>does not match any route rule</strong>. Inside these hours on a working day = <strong style="color:var(--ok)">WORK</strong>. Outside = <strong style="color:var(--bad)">PERSONAL</strong>. Default is Mon–Fri 06:00–19:00 to cover typical tradie shifts.</p>
+    <div class="grid-days" id="daysGrid"></div>
+    <div class="subtle-sep"></div>
+    <div class="row cols-2">
+      <div>
+        <label>Commute-window rule (legacy)</label>
+        <select id="commuteRule">
+          <option value="follow-hours" selected>Disabled — use route rules instead (recommended)</option>
+          <option value="always-personal">Treat trips in the windows below as personal (legacy)</option>
+        </select>
+        <div class="small muted" style="margin-top:8px">Route rules above now handle commute detection. This legacy setting is kept for edge cases.</div>
+      </div>
+      <div>
+        <label>Legacy commute time windows (24h)</label>
+        <div class="row cols-2">
+          <input type="text" id="amCommute" placeholder="e.g. 06:30-09:30" />
+          <input type="text" id="pmCommute" placeholder="e.g. 16:00-19:30" />
+        </div>
+        <div class="small muted" style="margin-top:8px">Only active if the legacy rule above is set to "Treat trips as personal".</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Xero export</h3>
+    <div class="title">Default values</div>
+    <div class="row cols-3">
+      <div><label>Default account code</label><input type="text" id="xeroAccount" placeholder="e.g. 4200" /></div>
+      <div><label>Default tax rate</label>
+        <select id="xeroTax">
+          <option>BAS Excluded</option>
+          <option>GST on Income</option>
+          <option>GST Free Income</option>
+          <option>No GST</option>
+        </select>
+      </div>
+      <div><label>Invoice reference prefix</label><input type="text" id="xeroPrefix" placeholder="e.g. TOLL-" /></div>
+      <div><label>Due in (days)</label><input type="number" id="xeroDue" value="14" min="0" /></div>
+      <div><label>Description template</label>
+        <input type="text" id="xeroDesc" value="Personal toll {date} {time} — {trip} ({tag})" />
+      </div>
+      <div><label>Invoice grouping</label>
+        <select id="xeroGroup">
+          <option value="per-trip" selected>One line per trip</option>
+          <option value="per-driver">One summary line per driver</option>
+        </select>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:14px">Template tokens: <code>{date}</code> <code>{time}</code> <code>{trip}</code> <code>{tag}</code> <code>{driver}</code> <code>{amount}</code></p>
+  </div>
+</section>
+
+<!-- ============================================== STATEMENTS ============================================== -->
+<section data-panel="statements" class="hidden">
+  <div class="panel-header">
+    <div>
+      <div class="tag">Archive</div>
+      <h2><span class="outline">Saved</span> <span class="solid">statements</span></h2>
+    </div>
+    <p class="lead">Select one or more statements and click Export to Xero to build a combined invoice CSV ready to upload.</p>
+  </div>
+
+  <!-- Selection + export bar -->
+  <div id="stmtsSelectionBar" style="display:none;position:sticky;top:65px;z-index:15;background:var(--accent-soft);border:1px solid var(--accent);border-radius:14px;padding:14px 20px;margin-bottom:16px;display:none;align-items:center;gap:16px;flex-wrap:wrap">
+    <span id="stmtsSelCount" style="font-weight:700;color:var(--ink);font-size:14px"></span>
+    <span id="stmtsSelSummary" class="small muted"></span>
+    <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnSelectAll" class="secondary" style="font-size:11px;padding:8px 14px">Select all</button>
+      <button id="btnSelectNone" class="ghost" style="font-size:11px;padding:8px 14px">Clear</button>
+      <button id="btnDownloadSelSummary" class="secondary" style="font-size:12px;padding:10px 20px">Download summary</button>
+      <button id="btnExportSelectedXero" style="background:var(--ok);color:#000;font-size:12px;padding:10px 20px">Export to Xero</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="card" style="padding:16px 20px;margin-bottom:12px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
+        <label style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">From</label>
+        <input type="date" id="stmtFltFrom" style="background:var(--bg-2);border:1px solid var(--line);color:var(--ink);padding:7px 10px;border-radius:8px;font-size:13px" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
+        <label style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">To</label>
+        <input type="date" id="stmtFltTo" style="background:var(--bg-2);border:1px solid var(--line);color:var(--ink);padding:7px 10px;border-radius:8px;font-size:13px" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px">
+        <label style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Search period</label>
+        <input type="text" id="stmtFltQ" placeholder="e.g. March, 2025…" style="background:var(--bg-2);border:1px solid var(--line);color:var(--ink);padding:7px 10px;border-radius:8px;font-size:13px" />
+      </div>
+      <button class="ghost" id="btnStmtClearFlt" style="padding:8px 14px;font-size:11px;align-self:flex-end">Clear filters</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Archive</h3>
+    <div class="title">Your statement history</div>
+    <p class="lead">Newest first. Tick statements to select them for Xero export.</p>
+    <div class="drop" id="stmtsDrop" style="padding:28px 20px;margin:8px 0 16px 0;cursor:pointer">
+      <div style="font-size:15px;line-height:1.5">
+        <strong>Drop statement JSON files here</strong> to import them into this archive,
+        or <a href="#" id="btnStmtsImport">browse…</a>
+      </div>
+      <div class="small muted" style="margin-top:6px">
+        Accepts a full archive bundle (<code>linkt-statements-archive-*.json</code>) or one or more single-statement JSON files.
+      </div>
+      <input type="file" id="stmtsImportInput" accept=".json,application/json" multiple style="display:none" />
+    </div>
+    <div class="actions-bar" style="margin:0 0 16px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="secondary" id="btnStmtsExportAll" title="Download every saved statement as a single JSON bundle">Export all (JSON)</button>
+      <span class="small muted" style="margin-left:auto">Statements live in your browser's local database per-origin. If you host this app at a new URL (e.g. GitHub Pages), export from the old URL and drop the bundle here to carry your archive across.</span>
+    </div>
+    <div id="statementsList"></div>
+  </div>
+</section>
+
+
+<!-- ============================================== HELP ============================================== -->
+<section data-panel="help" class="hidden">
+  <div class="panel-header">
+    <div>
+      <div class="tag">Reference</div>
+      <h2><span class="outline">How</span> <span class="solid">it works</span></h2>
+    </div>
+    <p class="lead">Five-step workflow, built to run entirely in your browser. No data leaves your machine.</p>
+  </div>
+
+  <div class="card">
+    <h3>Workflow</h3>
+    <div class="title">End-to-end</div>
+    <ol>
+      <li><strong>Set up drivers once.</strong> In <em>Drivers &amp; Tags</em>, list every toll tag and map it to the driver, their Xero contact, and optionally an account code.</li>
+      <li><strong>Configure working hours.</strong> In <em>Settings</em>, set the hours during which a toll is treated as work. Anything outside = personal. Set commute windows if commutes should be personal even during work hours.</li>
+      <li><strong>Upload the Linkt CSV.</strong> In <em>Process CSV</em>, drop your latest statement in. Columns are auto-detected.</li>
+      <li><strong>Review &amp; override.</strong> Every row is classified <span class="chip work">Work</span> or <span class="chip pers">Personal</span> with the rule shown. Override any row inline.</li>
+      <li><strong>Export for Xero.</strong> In <em>Xero Export</em>, click <em>Build</em> then <em>Download</em>. Import the CSV into Xero → Sales → Invoices → Import.</li>
+      <li><strong>Save the config.</strong> Use <em>Save config</em> up top to download a JSON with drivers + rules. Keep it in the Claude Project so the setup is versioned.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Logic</h3>
+    <div class="title">Classification order</div>
+    <p class="small muted">For each row the tool applies, in order:</p>
+    <ol class="small">
+      <li>If the driver/tag has a <em>Default rule</em> of <code>always-personal</code> or <code>always-work</code>, use it.</li>
+      <li>If the trip falls inside a commute window → <strong style="color:var(--bad)">personal</strong>.</li>
+      <li>If the day is outside working days, or time is outside working hours → <strong style="color:var(--bad)">personal</strong>.</li>
+      <li>Otherwise → <strong style="color:var(--ok)">work</strong>.</li>
+      <li>Manual override on the row always wins.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>Format</h3>
+    <div class="title">Xero CSV columns</div>
+    <p class="small">One invoice per driver, dated today, with one line per personal toll. Columns: <code>ContactName, EmailAddress, InvoiceNumber, Reference, InvoiceDate, DueDate, Description, Quantity, UnitAmount, AccountCode, TaxType</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================== SCRIPT ============================================== -->
+<script>
+/* ------------------------------ build / update check ------------------------------ */
+// This constant is rewritten by Claude each time it edits the file, so we can
+// detect when the file on disk is newer than the copy loaded into this tab.
+const BUILD_VERSION = "2026-04-17.16";
+
+(function bindReloadControls(){
+  const hardReload = ()=>{
+    try { window.location.reload(); } catch(e){ window.location.href = window.location.href; }
+  };
+  document.getElementById("btnReload")?.addEventListener("click", hardReload);
+  document.getElementById("btnReloadBanner")?.addEventListener("click", hardReload);
+})();
+
+(function checkForNewerBuild(){
+  // Fetch our own source, look for a newer BUILD_VERSION, and show a banner if found.
+  // Works when the page is served over http(s) or from a file:// origin the browser allows;
+  // silently no-ops otherwise, in which case the user can click the visible Reload button.
+  async function poll(){
+    try {
+      const res = await fetch(window.location.href, { cache: "no-store" });
+      if(!res.ok) return;
+      const txt = await res.text();
+      const m = txt.match(/const BUILD_VERSION = "([^"]+)"/);
+      if(m && m[1] && m[1] !== BUILD_VERSION){
+        const banner = document.getElementById("updateBanner");
+        if(banner){
+          banner.querySelector("span").textContent = "A newer version of this app is on disk (v" + m[1] + "). ";
+          banner.hidden = false;
+        }
+      }
+    } catch(e){ /* file:// fetch may be blocked — ignore */ }
+  }
+  poll();                      // first check shortly after load
+  setInterval(poll, 15000);    // then every 15 seconds
+})();
+
+/* ------------------------------ state ------------------------------ */
+const state = {
+  drivers: [],
+  trips: [],
+  settings: {
+    days: {
+      0:{on:false,start:"06:00",end:"19:00"},
+      1:{on:true, start:"06:00",end:"19:00"},
+      2:{on:true, start:"06:00",end:"19:00"},
+      3:{on:true, start:"06:00",end:"19:00"},
+      4:{on:true, start:"06:00",end:"19:00"},
+      5:{on:true, start:"06:00",end:"19:00"},
+      6:{on:false,start:"06:00",end:"19:00"},
+    },
+    commuteRule:"follow-hours",   // commute-window rule disabled by default; route rules handle commutes
+    amCommute:"06:00-09:30",      // drives the "commute"-class route rule (Gateway/Logan motorway tolls)
+    pmCommute:"15:00-18:30",      // drives the "commute"-class route rule (Gateway/Logan motorway tolls)
+    routes:[],                    // seeded from DEFAULT_ROUTES on first load / via backfill
+    xero:{
+      account:"4200",
+      tax:"BAS Excluded",
+      prefix:"TOLL-",
+      due:14,
+      desc:"Personal toll {date} {time} — {trip} ({tag})",
+      group:"per-trip"
+    }
+  },
+  mapping:{date:"",time:"",tag:"",amt:"",desc:"",ref:""},
+  xeroRows: [],
+  statements: [],           // in-memory cache, loaded from IndexedDB
+  loadedStatementId: null   // when a saved statement is reopened
+};
+
+const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+/* ------------------------------ CAR rate repricer ------------------------------ */
+/* Toll point CAR (Class 2) rates. Key is a lowercase substring that matches
+   the Linkt trip description. LCV (Class 3) is what Linkt charges; CAR is what
+   we charge employees back for personal use of a company vehicle. */
+const CAR_RATES = [
+  { match:"murarrie",    carRate:5.78, note:"Gateway Bridge (Murarrie)" },
+  { match:"heathwood",   carRate:3.61, note:"Logan Motorway (Heathwood)" },
+  { match:"kuraby",      carRate:3.61, note:"Logan Motorway (Kuraby)" },
+  { match:"clem7",       carRate:6.50, note:"Clem7 Tunnel" },
+  { match:"legacy way",  carRate:7.00, note:"Legacy Way Tunnel" },
+  { match:"airportlink", carRate:7.16, note:"AirportlinkM7 (Full Trip)" },
+  { match:"kedron",      carRate:7.16, note:"AirportlinkM7 via Kedron corridor" },
+  { match:"bowen hills", carRate:7.16, note:"AirportlinkM7 via Bowen Hills corridor" },
+  { match:"toowoomba",   carRate:2.88, note:"Toowoomba Bypass" },
+];
+
+function lookupCarRate(tripDesc){
+  if(!tripDesc) return null;
+  const lower = tripDesc.toLowerCase();
+  const r = CAR_RATES.find(r => lower.includes(r.match));
+  return r ? r.carRate : null;
+}
+
+/* Returns the amount used for invoicing — carRateOverride if set, else original Linkt amount */
+function billableAmount(t){
+  return (t.carRateOverride != null) ? t.carRateOverride : t.amount;
+}
+const TAB_ORDER = ["process","drivers","settings","statements","help"];
+const TAB_LABELS = {
+  "process":"Process",
+  "drivers":"Drivers",
+  "settings":"Settings",
+  "statements":"Statements",
+  "help":"Reference"
+};
+
+/* ---------------------- storage (localStorage + auto-save to folder) ---------------------- */
+function save(){
+  try{ localStorage.setItem("linkt-toll-allocator", JSON.stringify({
+    drivers:state.drivers, settings:state.settings, mapping:state.mapping
+  })); }catch(e){}
+  scheduleFolderAutoSave();
+}
+function load(){
+  try{
+    const raw = localStorage.getItem("linkt-toll-allocator");
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d.drivers) state.drivers = d.drivers;
+    if(d.settings) state.settings = Object.assign(state.settings, d.settings);
+    if(d.mapping) state.mapping = Object.assign(state.mapping, d.mapping);
+  }catch(e){}
+}
+
+/* ------------------------------ built-in fleet roster ------------------------------ */
+/* The canonical list of drivers / tags / emails for Tall Tech + Focal Glow.
+   Used to (a) seed the app first time it loads with no localStorage, and
+   (b) back-fill missing emails / business / vehicle onto existing drivers so
+   Scott doesn't have to re-import the config JSON after every update. */
+const DEFAULT_DRIVERS = [
+  { tag:"980KJ7", rego:"",       name:"Addison Mitchell", business:"Director",   xeroContact:"Addison Mitchell", email:"addison@talltech.co", accountCode:"", defaultRule:"always-work", vehicle:"Ford Raptor" },
+  { tag:"681PU9", rego:"",       name:"Quinton Van Dyk",  business:"Tall Tech",  xeroContact:"Quinton Van Dyk",  email:"quinton@talltech.co", accountCode:"", defaultRule:"", vehicle:"Ford Transit Custom" },
+  { tag:"925PU9", rego:"",       name:"Scott Bethell",    business:"Tall Tech",  xeroContact:"Scott Bethell",    email:"scott@talltech.co",   accountCode:"", defaultRule:"", vehicle:"Ford Ranger" },
+  { tag:"962GS2", rego:"",       name:"Matt O'Conner",    business:"Tall Tech",  xeroContact:"Matt O'Conner",    email:"matt@talltech.co",    accountCode:"", defaultRule:"", vehicle:"Ford Ranger" },
+  { tag:"",       rego:"",       name:"Lane Steele",      business:"Tall Tech",  xeroContact:"Lane Steele",      email:"lane@talltech.co",    accountCode:"", defaultRule:"", vehicle:"" },
+  { tag:"880IW6", rego:"",       name:"Liam Willis",      business:"Tall Tech",  xeroContact:"Liam Willis",      email:"liam@talltech.co",    accountCode:"", defaultRule:"", vehicle:"Hyundai iLoad" },
+  { tag:"316FL4", rego:"",       name:"Jordan Gameiro",   business:"Tall Tech",  xeroContact:"Jordan Gameiro",   email:"jordan@talltech.co",  accountCode:"", defaultRule:"", vehicle:"Volkswagen Caddy" },
+  { tag:"293PD3", rego:"",       name:"Lachlan Lumb",     business:"Tall Tech",  xeroContact:"Lachlan Lumb",     email:"lachlan@talltech.co", accountCode:"", defaultRule:"", vehicle:"Ford Transit Custom" },
+  { tag:"522YZH", rego:"",       name:"Bryce Allen",      business:"Tall Tech",  xeroContact:"Bryce Allen",      email:"bryce@talltech.co",   accountCode:"", defaultRule:"", vehicle:"Volkswagen Transporter" },
+  { tag:"",       rego:"",       name:"Danny Tumata",     business:"Tall Tech",  xeroContact:"Danny Tumata",     email:"danny@talltech.co",   accountCode:"", defaultRule:"", vehicle:"" },
+  { tag:"225IZ5", rego:"",       name:"Declan Park",      business:"Tall Tech",  xeroContact:"Declan Park",      email:"declan@talltech.co",  accountCode:"", defaultRule:"", vehicle:"Ford Ranger" },
+  { tag:"599BM2", rego:"",       name:"Regan Johnston",   business:"Tall Tech",  xeroContact:"Regan Johnston",   email:"regan@talltech.co",   accountCode:"", defaultRule:"", vehicle:"Volkswagen Amarok" },
+  { tag:"",       rego:"",       name:"Dane Sandilands",  business:"Tall Tech",  xeroContact:"Dane Sandilands",  email:"dane@talltech.co",    accountCode:"", defaultRule:"", vehicle:"" },
+  { tag:"",       rego:"",       name:"Ben Keyte",        business:"Tall Tech",  xeroContact:"Ben Keyte",        email:"ben@talltech.co",     accountCode:"", defaultRule:"", vehicle:"" },
+  { tag:"561OL7", rego:"",       name:"Nico Languillon",  business:"Tall Tech",  xeroContact:"Nico Languillon",  email:"nico@talltech.co",    accountCode:"", defaultRule:"", vehicle:"Ford Everest" },
+  { tag:"982LC6", rego:"",       name:"Hannah Wilkinson", business:"Tall Tech",  xeroContact:"Hannah Wilkinson", email:"hannah@talltech.co",  accountCode:"", defaultRule:"", vehicle:"Ford Ranger" },
+  { tag:"365YVK", rego:"",       name:"Mitchell Figg",    business:"Tall Tech",  xeroContact:"Mitchell Figg",    email:"mitchell@talltech.co",accountCode:"", defaultRule:"", vehicle:"Hyundai iLoad" },
+  { tag:"779LL6", rego:"",       name:"Abbey Mason",      business:"Tall Tech",  xeroContact:"Abbey Mason",      email:"abbey@talltech.co",   accountCode:"", defaultRule:"", vehicle:"Ford Ranger" },
+  { tag:"",       rego:"",       name:"Tamsin Spencer",   business:"Focal Glow", xeroContact:"Tamsin Spencer",   email:"tamsin@focalglow.co", accountCode:"", defaultRule:"", vehicle:"" },
+  { tag:"478A4C", rego:"",       name:"Bailee Reed-Sgro", business:"Director",   xeroContact:"Bailee Reed-Sgro", email:"bailee@talltech.co",  accountCode:"", defaultRule:"always-work", vehicle:"BMW iX1" }
+];
+
+/* Lookup by tag (normalized) or by name (case-insensitive) */
+function lookupDefault(d){
+  if(!d) return null;
+  const tag = (d.tag||"").replace(/\s+/g,"").toUpperCase();
+  const nm  = (d.name||"").trim().toLowerCase();
+  if(tag){
+    const byTag = DEFAULT_DRIVERS.find(x => x.tag && x.tag.replace(/\s+/g,"").toUpperCase() === tag);
+    if(byTag) return byTag;
+  }
+  if(nm){
+    const byName = DEFAULT_DRIVERS.find(x => x.name.toLowerCase() === nm);
+    if(byName) return byName;
+  }
+  return null;
+}
+
+/* If the driver list is empty, seed it from DEFAULT_DRIVERS.
+   Otherwise, fill in any missing email / business / xeroContact / vehicle
+   from the default roster (never overwrite values the user has already set). */
+function seedOrBackfillDrivers(){
+  if(!state.drivers || state.drivers.length === 0){
+    state.drivers = DEFAULT_DRIVERS.map(d => Object.assign({}, d));
+    return;
+  }
+  let changed = false;
+  // Rename migrations: short/legacy name → canonical full name. Runs first so
+  // subsequent lookups and force-upgrades match the canonical key.
+  const RENAMES = { "bailey":"Bailee Reed-Sgro" };
+  state.drivers.forEach(d => {
+    const key = (d.name||"").trim().toLowerCase();
+    if(RENAMES[key]){
+      d.name = RENAMES[key];
+      // If xeroContact was the old short name (or empty), update it too.
+      if(!d.xeroContact || d.xeroContact.trim().toLowerCase() === key){
+        d.xeroContact = RENAMES[key];
+      }
+      changed = true;
+    }
+  });
+  // Drivers whose business designation should be force-upgraded from any
+  // earlier value (e.g. "Tall Tech" → "Director"). Matched by name.
+  const FORCE_BUSINESS = { "addison mitchell":"Director", "bailee reed-sgro":"Director" };
+  state.drivers.forEach(d => {
+    const def = lookupDefault(d);
+    if(!def) return;
+    ["email","business","xeroContact","vehicle","rego"].forEach(k => {
+      if((d[k]===undefined || d[k]===null || d[k]==="") && def[k]){
+        d[k] = def[k];
+        changed = true;
+      }
+    });
+    const forceBiz = FORCE_BUSINESS[(d.name||"").trim().toLowerCase()];
+    if(forceBiz && d.business !== forceBiz){
+      d.business = forceBiz;
+      changed = true;
+    }
+  });
+  // Add any default drivers that are missing from the saved state (matched by name).
+  const haveNames = new Set(state.drivers.map(d => (d.name||"").trim().toLowerCase()).filter(Boolean));
+  DEFAULT_DRIVERS.forEach(def => {
+    if(!haveNames.has(def.name.toLowerCase())){
+      state.drivers.push(Object.assign({}, def));
+      changed = true;
+    }
+  });
+  if(changed){ try{ save(); }catch(e){} }
+}
+
+/* ------------------------------ built-in route rules ------------------------------ */
+/* Route rules classify a trip by matching its toll gantry pair (the "Trip description"
+   column in the Linkt statement). They run BEFORE the time-based fallback, so a known
+   commute route is always personal and a known site route is always work, no matter
+   what time of day the trip happened.
+
+   Match is case-insensitive substring; payroll can add / edit / remove routes in
+   Settings → Route rules. */
+const DEFAULT_ROUTES = [
+  // Commute corridors (home ↔ office, always personal)
+  { pattern:"Kedron to Bowen Hills", cls:"personal", note:"Northside home → Fortitude Valley office" },
+  { pattern:"Bowen Hills to Kedron", cls:"personal", note:"Fortitude Valley office → northside home" },
+  // Motorway-through tolls (commute-window aware: personal in AM/PM windows or weekends, work otherwise)
+  { pattern:"Kuraby North",           cls:"commute", note:"Logan Motorway toll — commute in AM/PM, work otherwise" },
+  { pattern:"Kuraby South",           cls:"commute", note:"Logan Motorway toll — commute in AM/PM, work otherwise" },
+  { pattern:"Murarrie North",         cls:"commute", note:"Gateway Motorway toll — commute in AM/PM, work otherwise" },
+  { pattern:"Murarrie South",         cls:"commute", note:"Gateway Motorway toll — commute in AM/PM, work otherwise" },
+  // Known work / site routes (always work)
+  { pattern:"Bowen Hills to Toombul", cls:"work", note:"Office → northside site" },
+  { pattern:"Toombul to Bowen Hills", cls:"work", note:"Northside site → office" },
+  { pattern:"Legacy Way West",        cls:"work", note:"Legacy Way tunnel site visit" },
+  { pattern:"Legacy Way East",        cls:"work", note:"Legacy Way tunnel site visit" }
+];
+
+/* Seed routes if empty, otherwise leave user's list alone. */
+function seedRoutes(){
+  if(!state.settings.routes || state.settings.routes.length === 0){
+    state.settings.routes = DEFAULT_ROUTES.map(r => Object.assign({}, r));
+    try{ save(); }catch(e){}
+  } else {
+    migrateRouteDefaults();
+  }
+}
+
+/* One-off migration: flip legacy Murarrie/Kuraby entries from "work" to "commute"
+   so motorway-through tolls are window-aware instead of always-work.
+   Triggered any time seedRoutes() runs on a non-empty list. Runs idempotently. */
+function migrateRouteDefaults(){
+  const routes = state.settings.routes || [];
+  const legacyPatterns = ["kuraby north","kuraby south","murarrie north","murarrie south"];
+  let changed = false;
+  routes.forEach(r => {
+    const p = (r.pattern||"").trim().toLowerCase();
+    if(legacyPatterns.includes(p) && r.cls === "work"){
+      r.cls = "commute";
+      if(!r.note || /site visit/i.test(r.note||"")){
+        r.note = p.startsWith("kuraby")
+          ? "Logan Motorway toll — commute in AM/PM, work otherwise"
+          : "Gateway Motorway toll — commute in AM/PM, work otherwise";
+      }
+      changed = true;
+    }
+  });
+  if(changed){ try{ save(); }catch(e){} }
+}
+
+/* Look up a trip against the route table. Returns {cls, pattern, note} or null. */
+function matchRoute(tripDesc){
+  if(!tripDesc) return null;
+  const haystack = tripDesc.toLowerCase();
+  const routes = state.settings.routes || [];
+  for(const r of routes){
+    const needle = (r.pattern||"").trim().toLowerCase();
+    if(needle && haystack.includes(needle)){
+      return r;
+    }
+  }
+  return null;
+}
+
+/* ------------------------------ folder auto-save (File System Access API) ------------------------------ */
+/* Stores the toll folder handle in IndexedDB so auto-save resumes automatically next session.
+   Writes linkt-toll-allocator-config.json into that folder on every change, debounced. */
+const FSDB = {name:"linkt-toll-allocator-db", version:2, store:"handles", key:"folderHandle", stmtStore:"statements"};
+let folderHandle = null;
+let autoSaveTimer = null;
+
+function openFSDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(FSDB.name, FSDB.version);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(FSDB.store)) db.createObjectStore(FSDB.store);
+      if(!db.objectStoreNames.contains(FSDB.stmtStore)) db.createObjectStore(FSDB.stmtStore, {keyPath:"id"});
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
+async function putStatement(s){
+  const db = await openFSDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(FSDB.stmtStore, "readwrite");
+    tx.objectStore(FSDB.stmtStore).put(s);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function getAllStatements(){
+  const db = await openFSDB();
+  return new Promise((resolve)=>{
+    const tx = db.transaction(FSDB.stmtStore, "readonly");
+    const req = tx.objectStore(FSDB.stmtStore).getAll();
+    req.onsuccess = ()=> resolve(req.result || []);
+    req.onerror = ()=> resolve([]);
+  });
+}
+async function deleteStatementDb(id){
+  const db = await openFSDB();
+  return new Promise((resolve)=>{
+    const tx = db.transaction(FSDB.stmtStore, "readwrite");
+    tx.objectStore(FSDB.stmtStore).delete(id);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> resolve();
+  });
+}
+async function putHandle(h){
+  const db = await openFSDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(FSDB.store, "readwrite");
+    tx.objectStore(FSDB.store).put(h, FSDB.key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function getStoredHandle(){
+  try{
+    const db = await openFSDB();
+    return new Promise((resolve)=>{
+      const tx = db.transaction(FSDB.store, "readonly");
+      const req = tx.objectStore(FSDB.store).get(FSDB.key);
+      req.onsuccess = ()=> resolve(req.result || null);
+      req.onerror = ()=> resolve(null);
+    });
+  }catch(e){ return null; }
+}
+async function clearStoredHandle(){
+  try{
+    const db = await openFSDB();
+    return new Promise((resolve)=>{
+      const tx = db.transaction(FSDB.store, "readwrite");
+      tx.objectStore(FSDB.store).delete(FSDB.key);
+      tx.oncomplete = ()=> resolve();
+      tx.onerror = ()=> resolve();
+    });
+  }catch(e){}
+}
+
+async function ensurePermission(handle, mode){
+  try{
+    const opts = {mode: mode || "readwrite"};
+    if((await handle.queryPermission(opts)) === "granted") return true;
+    if((await handle.requestPermission(opts)) === "granted") return true;
+  }catch(e){}
+  return false;
+}
+
+function setFolderUi(){
+  const btn = document.getElementById("btnConnectFolder");
+  const lab = document.getElementById("folderLabel");
+  if(folderHandle){
+    btn.classList.add("connected");
+    lab.innerHTML = `Auto-saving · <span class="fname">${escAttr(folderHandle.name || "toll folder")}</span>`;
+    btn.title = "Click to change folder (Shift-click to disconnect)";
+  } else {
+    btn.classList.remove("connected");
+    lab.textContent = "Connect toll folder";
+    btn.title = "Auto-save config to your Documents › Claude › Projects › Toll folder";
+  }
+}
+function setSaveStatus(kind, text){
+  const el = document.getElementById("saveStatus");
+  el.className = "save-status " + (kind||"");
+  el.textContent = text || "";
+  if(kind === "saved"){
+    clearTimeout(el._t);
+    el._t = setTimeout(()=>{ el.className = "save-status"; el.textContent = ""; }, 2000);
+  }
+}
+
+async function connectFolder(){
+  if(!window.showDirectoryPicker){
+    alert("Folder auto-save needs a Chromium browser (Chrome, Edge, Arc, Brave). Use Save/Load config instead.");
+    return;
+  }
+  try{
+    const h = await window.showDirectoryPicker({
+      mode: "readwrite",
+      startIn: "documents",
+      id: "linkt-toll-allocator-folder"
+    });
+    folderHandle = h;
+    await putHandle(h);
+    setFolderUi();
+    await writeConfigToFolder();
+  }catch(e){
+    if(e && e.name === "AbortError") return; // user cancelled
+    console.warn(e);
+    alert("Could not connect folder: " + (e && e.message || e));
+  }
+}
+async function disconnectFolder(){
+  folderHandle = null;
+  await clearStoredHandle();
+  setFolderUi();
+  setSaveStatus("", "");
+}
+
+function scheduleFolderAutoSave(){
+  if(!folderHandle) return;
+  clearTimeout(autoSaveTimer);
+  setSaveStatus("saving", "saving…");
+  autoSaveTimer = setTimeout(writeConfigToFolder, 350);
+}
+
+async function writeConfigToFolder(){
+  if(!folderHandle) return;
+  if(!(await ensurePermission(folderHandle, "readwrite"))){
+    setSaveStatus("error", "permission needed");
+    return;
+  }
+  const payload = {
+    tool: "linkt-toll-allocator",
+    exportedAt: new Date().toISOString(),
+    drivers: state.drivers,
+    settings: state.settings,
+    mapping: state.mapping
+  };
+  try{
+    const fh = await folderHandle.getFileHandle("linkt-toll-allocator-config.json", {create:true});
+    const w = await fh.createWritable();
+    await w.write(JSON.stringify(payload, null, 2));
+    await w.close();
+    setSaveStatus("saved", "saved ✓");
+  }catch(e){
+    console.warn("Auto-save failed:", e);
+    setSaveStatus("error", "save failed");
+  }
+}
+
+async function initFolderAutoSave(){
+  const btn = document.getElementById("btnConnectFolder");
+  btn.addEventListener("click", async (ev)=>{
+    if(ev.shiftKey && folderHandle){ await disconnectFolder(); return; }
+    await connectFolder();
+  });
+
+  // Restore previously-connected folder
+  const stored = await getStoredHandle();
+  if(stored){
+    // We have a handle, but browsers may have expired the permission.
+    // Show it as "needs reconnect" until user grants permission again.
+    folderHandle = stored;
+    const ok = await ensurePermission(stored, "readwrite").catch(()=>false);
+    if(!ok){
+      // Silent — don't prompt at load. User clicks the chip to re-grant.
+      // Show it as not-connected until they re-authorise.
+      folderHandle = null;
+      const lab = document.getElementById("folderLabel");
+      lab.textContent = "Reconnect toll folder";
+    } else {
+      setFolderUi();
+    }
+  } else {
+    setFolderUi();
+  }
+}
+
+/* ------------------------------ tabs ------------------------------ */
+const tabButtons = document.querySelectorAll("nav.tabs button[data-tab]");
+function setActiveTab(tab){
+  tabButtons.forEach(x=>x.classList.toggle("active", x.dataset.tab===tab));
+  document.querySelectorAll("section[data-panel]").forEach(s=>{
+    s.classList.toggle("hidden", s.dataset.panel!==tab);
+  });
+  // dots
+  const idx = TAB_ORDER.indexOf(tab);
+  document.querySelectorAll("#navDots .dot").forEach((d,i)=>{
+    d.classList.toggle("active", i===idx);
+  });
+  document.getElementById("sectionLabel").textContent = TAB_LABELS[tab] || "";
+}
+tabButtons.forEach(b => b.onclick = ()=> setActiveTab(b.dataset.tab));
+
+document.getElementById("btnBeginWorkflow").onclick = ()=>{
+  setActiveTab("process");
+  document.querySelector('section[data-panel="process"]').scrollIntoView({behavior:"smooth", block:"start"});
+};
+
+/* ------------------------------ settings UI ------------------------------ */
+function renderDays(){
+  const g = document.getElementById("daysGrid");
+  g.innerHTML = "";
+  for(let i=0;i<7;i++){
+    const s = state.settings.days[i];
+    const el = document.createElement("div");
+    el.className = "day";
+    el.innerHTML = `
+      <div class="dname">${DAY_NAMES[i]}</div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-2);text-transform:none;letter-spacing:normal;font-weight:500;margin-bottom:8px">
+        <input type="checkbox" data-day="${i}" data-k="on" ${s.on?"checked":""} style="width:auto"/>Working day
+      </label>
+      <div><label>Start</label><input type="time" data-day="${i}" data-k="start" value="${s.start}"/></div>
+      <div style="margin-top:8px"><label>End</label><input type="time" data-day="${i}" data-k="end" value="${s.end}"/></div>
+    `;
+    g.appendChild(el);
+  }
+  g.querySelectorAll("input").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const d = +inp.dataset.day, k = inp.dataset.k;
+      if(k==="on") state.settings.days[d].on = inp.checked;
+      else state.settings.days[d][k] = inp.value;
+      save();
+    });
+  });
+}
+function bindSettings(){
+  const s = state.settings;
+  document.getElementById("commuteRule").value = s.commuteRule;
+  document.getElementById("amCommute").value = s.amCommute || "";
+  document.getElementById("pmCommute").value = s.pmCommute || "";
+  document.getElementById("xeroAccount").value = s.xero.account;
+  document.getElementById("xeroTax").value = s.xero.tax;
+  document.getElementById("xeroPrefix").value = s.xero.prefix;
+  document.getElementById("xeroDue").value = s.xero.due;
+  document.getElementById("xeroDesc").value = s.xero.desc;
+  document.getElementById("xeroGroup").value = s.xero.group;
+
+  const bind = (id, obj, key) => {
+    document.getElementById(id).addEventListener("input", e=>{ obj[key] = e.target.value; save(); });
+  };
+  bind("commuteRule", s, "commuteRule");
+  bind("amCommute", s, "amCommute");
+  bind("pmCommute", s, "pmCommute");
+  bind("xeroAccount", s.xero, "account");
+  bind("xeroTax", s.xero, "tax");
+  bind("xeroPrefix", s.xero, "prefix");
+  bind("xeroDue", s.xero, "due");
+  bind("xeroDesc", s.xero, "desc");
+  bind("xeroGroup", s.xero, "group");
+  renderRoutes();
+}
+
+/* ------------------------------ route rules UI ------------------------------ */
+function renderRoutes(){
+  const tb = document.querySelector("#routeTable tbody");
+  if(!tb) return;
+  const routes = state.settings.routes || [];
+  tb.innerHTML = "";
+  if(routes.length === 0){
+    tb.innerHTML = `<tr><td colspan="4" class="muted" style="text-align:center;padding:40px">No route rules. Click "+ Add route" or "Reset to defaults".</td></tr>`;
+    return;
+  }
+  routes.forEach((r, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="text" data-k="pattern" value="${escAttr(r.pattern||"")}" placeholder="e.g. Kedron to Bowen Hills"></td>
+      <td><select data-k="cls">
+        <option value="personal" ${r.cls==="personal"?"selected":""}>Personal (commute corridor)</option>
+        <option value="commute"  ${r.cls==="commute"?"selected":""}>Commute (window-aware)</option>
+        <option value="work"     ${r.cls==="work"?"selected":""}>Work (site / tunnel)</option>
+      </select></td>
+      <td><input type="text" data-k="note" value="${escAttr(r.note||"")}" placeholder="(optional explanation)"></td>
+      <td style="white-space:nowrap">
+        <button class="ghost small" data-act="up"     data-idx="${idx}" style="padding:6px 8px"  title="Move up">↑</button>
+        <button class="ghost small" data-act="down"   data-idx="${idx}" style="padding:6px 8px"  title="Move down">↓</button>
+        <button class="danger small" data-act="remove" data-idx="${idx}" style="padding:6px 10px" title="Remove">✕</button>
+      </td>
+    `;
+    tr.querySelectorAll("input, select").forEach(inp => {
+      inp.addEventListener("input", e => {
+        state.settings.routes[idx][inp.dataset.k] = inp.value;
+        save();
+      });
+    });
+    tr.querySelectorAll("button[data-act]").forEach(btn => {
+      btn.addEventListener("click", e => {
+        const i = Number(btn.dataset.idx);
+        const act = btn.dataset.act;
+        const arr = state.settings.routes;
+        if(act === "remove"){
+          if(confirm("Remove this route rule?")){
+            arr.splice(i,1); save(); renderRoutes();
+            if(state.trips.length){ classifyAll(); renderTrips(); }
+          }
+        } else if(act === "up" && i > 0){
+          [arr[i-1], arr[i]] = [arr[i], arr[i-1]]; save(); renderRoutes();
+          if(state.trips.length){ classifyAll(); renderTrips(); }
+        } else if(act === "down" && i < arr.length - 1){
+          [arr[i+1], arr[i]] = [arr[i], arr[i+1]]; save(); renderRoutes();
+          if(state.trips.length){ classifyAll(); renderTrips(); }
+        }
+      });
+    });
+    tb.appendChild(tr);
+  });
+}
+
+/* Width for the Route rules table */
+(function ensureRouteTableCss(){
+  const style = document.createElement("style");
+  style.textContent = `
+    #routeTable{table-layout:fixed;min-width:720px}
+    #routeTable th:nth-child(1), #routeTable td:nth-child(1){width:320px}
+    #routeTable th:nth-child(2), #routeTable td:nth-child(2){width:160px}
+    #routeTable th:nth-child(3), #routeTable td:nth-child(3){width:auto}
+    #routeTable th:nth-child(4), #routeTable td:nth-child(4){width:130px}
+    #routeTable td input, #routeTable td select{width:100%}
+  `;
+  document.head.appendChild(style);
+})();
+
+/* Wire the Add / Reset buttons (only once the DOM is ready) */
+function wireRouteButtons(){
+  const addBtn = document.getElementById("btnAddRoute");
+  const resetBtn = document.getElementById("btnResetRoutes");
+  if(addBtn && !addBtn.dataset.wired){
+    addBtn.dataset.wired = "1";
+    addBtn.onclick = () => {
+      state.settings.routes = state.settings.routes || [];
+      state.settings.routes.push({pattern:"", cls:"work", note:""});
+      save(); renderRoutes();
+    };
+  }
+  if(resetBtn && !resetBtn.dataset.wired){
+    resetBtn.dataset.wired = "1";
+    resetBtn.onclick = () => {
+      if(!confirm("Replace the current route rules with the built-in default set? (Your custom entries will be lost.)")) return;
+      state.settings.routes = DEFAULT_ROUTES.map(r => Object.assign({}, r));
+      save(); renderRoutes();
+      if(state.trips.length){ classifyAll(); renderTrips(); }
+    };
+  }
+}
+
+/* ------------------------------ drivers UI ------------------------------ */
+function renderDrivers(){
+  const tb = document.querySelector("#driverTable tbody");
+  tb.innerHTML = "";
+  if(state.drivers.length===0){
+    tb.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center;padding:40px">No drivers yet. Click "+ Add driver".</td></tr>`;
+    return;
+  }
+  state.drivers.forEach((d,idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="text" data-k="rego" value="${escAttr(d.rego||"")}" placeholder="e.g. 925PU9"></td>
+      <td><input type="text" data-k="tag" value="${escAttr(d.tag||"")}" placeholder="e.g. 980KJ7"></td>
+      <td><input type="text" data-k="vehicle" value="${escAttr(d.vehicle||"")}" placeholder="e.g. Ford Ranger"></td>
+      <td><input type="text" data-k="name" value="${escAttr(d.name)}"></td>
+      <td><select data-k="business">
+        <option value="" ${!d.business?"selected":""}>—</option>
+        <option value="Tall Tech" ${d.business==="Tall Tech"?"selected":""}>Tall Tech</option>
+        <option value="Focal Glow" ${d.business==="Focal Glow"?"selected":""}>Focal Glow</option>
+        <option value="Director" ${d.business==="Director"?"selected":""}>Director</option>
+      </select></td>
+      <td><input type="text" data-k="xeroContact" value="${escAttr(d.xeroContact||"")}" placeholder="(defaults to driver name)"></td>
+      <td><input type="email" data-k="email" value="${escAttr(d.email||"")}"></td>
+      <td><input type="text" data-k="accountCode" value="${escAttr(d.accountCode||"")}" placeholder="(uses default)"></td>
+      <td><select data-k="defaultRule">
+        <option value="" ${!d.defaultRule?"selected":""}>Auto (by hours)</option>
+        <option value="always-personal" ${d.defaultRule==="always-personal"?"selected":""}>Always personal</option>
+        <option value="always-work" ${d.defaultRule==="always-work"?"selected":""}>Always work</option>
+      </select></td>
+      <td style="white-space:nowrap">
+        <button class="danger small" data-act="remove" data-idx="${idx}" style="padding:6px 10px">Remove</button>
+      </td>
+    `;
+    tr.querySelectorAll("input,select").forEach(inp=>{
+      inp.addEventListener("input", ()=>{
+        state.drivers[idx][inp.dataset.k] = inp.value;
+        save();
+      });
+    });
+    tr.querySelector('[data-act="remove"]').onclick = ()=> removeDriver(idx);
+    tb.appendChild(tr);
+  });
+}
+
+/* Prompt to change the tag / licence plate for a driver */
+function changeVehicle(idx){
+  const d = state.drivers[idx];
+  if(!d) return;
+  const current = d.tag || "";
+  const next = window.prompt(
+    `Change vehicle for ${d.name || "this driver"}.\n\n` +
+    `Enter the new tag number or licence plate as it appears on the Linkt statement. ` +
+    `Past saved statements keep their original tag → driver mapping, so historical charges stay correct.`,
+    current
+  );
+  if(next === null) return;             // user cancelled
+  const trimmed = String(next).trim();
+  if(trimmed === current) return;       // no change
+  if(!trimmed){
+    alert("Tag / licence plate can't be blank. Use Remove if the driver has left.");
+    return;
+  }
+  // Warn if the new tag collides with another driver
+  const norm = normalizeTag(trimmed);
+  const dupe = state.drivers.findIndex((x,i)=> i!==idx && normalizeTag(x.tag)===norm);
+  if(dupe !== -1){
+    if(!confirm(`Tag "${trimmed}" is already assigned to ${state.drivers[dupe].name || "another driver"}. Continue anyway?`)) return;
+  }
+  state.drivers[idx].tag = trimmed;
+  renderDrivers();
+  save();
+}
+
+/* Confirmation before removing a driver */
+function removeDriver(idx){
+  const d = state.drivers[idx];
+  if(!d) return;
+  const label = d.name || d.tag || "this driver";
+  const msg =
+    `Remove ${label}?\n\n` +
+    `They'll no longer appear in driver/tag lookups for new statements. ` +
+    `Past saved statements keep their original mapping — existing invoices are unaffected.`;
+  if(!confirm(msg)) return;
+  state.drivers.splice(idx,1);
+  renderDrivers();
+  save();
+}
+function escAttr(v){ return String(v==null?"":v).replace(/"/g,"&quot;"); }
+
+document.getElementById("btnAddDriver").onclick = ()=>{
+  state.drivers.push({tag:"",rego:"",name:"",business:"",xeroContact:"",email:"",accountCode:"",defaultRule:"",vehicle:""});
+  renderDrivers(); save();
+};
+document.getElementById("btnAddMissing").onclick = ()=>{
+  const haveTags = state.drivers.map(d=>normalizeTag(d.tag)).filter(Boolean);
+  const haveRegos = state.drivers.map(d=>normalizeTag(d.rego||"")).filter(Boolean);
+  const have = new Set([...haveTags, ...haveRegos]);
+  const seen = new Set();
+  const tags = [];
+  state.trips.forEach(t=>{
+    const n = normalizeTag(t.tag);
+    if(!n || seen.has(n) || have.has(n)) return;
+    seen.add(n);
+    tags.push({display:String(t.tag||"").trim(), norm:n});
+  });
+  tags.forEach(t=>{
+    state.drivers.push({tag:t.display,name:"",business:"",xeroContact:"",email:"",accountCode:"",defaultRule:""});
+  });
+  renderDrivers(); save();
+  alert(tags.length ? `Added ${tags.length} new tag${tags.length>1?"s":""}.` : "No unmapped tags found.");
+};
+
+/* ------------------------------ CSV parse ------------------------------ */
+function parseCSV(text){
+  const rows = [];
+  let cur = [], field = "", inQ = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQ){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else inQ = false;
+      } else field += c;
+    } else {
+      if(c === '"') inQ = true;
+      else if(c === ','){ cur.push(field); field = ""; }
+      else if(c === '\r'){ }
+      else if(c === '\n'){ cur.push(field); rows.push(cur); cur = []; field = ""; }
+      else field += c;
+    }
+  }
+  if(field.length || cur.length){ cur.push(field); rows.push(cur); }
+  return rows.filter(r=>r.some(c=>String(c).trim().length));
+}
+
+function guessColumn(headers, candidates){
+  const hs = headers.map(h=>h.toLowerCase().trim());
+  for(const cand of candidates){
+    const ix = hs.findIndex(h => h === cand.toLowerCase());
+    if(ix>=0) return headers[ix];
+  }
+  for(const cand of candidates){
+    const ix = hs.findIndex(h => h.includes(cand.toLowerCase()));
+    if(ix>=0) return headers[ix];
+  }
+  return "";
+}
+
+/* ------------------------------ CSV load / classify ------------------------------ */
+function handleCsvText(text){
+  const rows = parseCSV(text);
+  if(rows.length < 2){ setCsvStatus("CSV appears empty.", "error"); return; }
+  const headers = rows[0].map(h=>String(h).trim());
+  const data = rows.slice(1);
+
+  const m = state.mapping;
+  m.date = document.getElementById("colDate").value.trim() || guessColumn(headers, ["date","trip date","transaction date","posting date"]);
+  m.time = document.getElementById("colTime").value.trim() || guessColumn(headers, ["start time","trip time","transaction time","time"]);
+  m.tag  = document.getElementById("colTag").value.trim()  || guessColumn(headers, ["tag/registration","registration","tag","tag number","transponder","vehicle","rego","license plate","plate","account holder"]);
+  m.amt  = document.getElementById("colAmt").value.trim()  || guessColumn(headers, ["amount","trip cost","total","toll","cost","charge"]);
+  m.desc = document.getElementById("colDesc").value.trim() || guessColumn(headers, ["details","trip","description","location","road","gantry","trip name"]);
+  m.ref  = document.getElementById("colRef").value.trim()  || guessColumn(headers, ["trip id","reference","transaction id","id"]);
+
+  if(!m.date || !m.tag || !m.amt){
+    setCsvStatus(`Could not auto-detect required columns (date / tag / amount). Open "Column mapping" and set them manually. Headers found: ${headers.join(", ")}`, "error");
+    return;
+  }
+
+  const H = h => headers.indexOf(h);
+  const idxDate = H(m.date), idxTime = H(m.time), idxTag = H(m.tag), idxAmt = H(m.amt), idxDesc = H(m.desc), idxRef = H(m.ref);
+
+  let skippedFees = 0, skippedCredits = 0, skippedNoTime = 0;
+  state.trips = data.map((r, i) => {
+    const rawDate = (r[idxDate]||"").trim();
+    const rawTime = idxTime>=0 ? (r[idxTime]||"").trim() : "";
+    const parsed = parseDateTime(rawDate, rawTime);
+    const rawAmt = r[idxAmt]||"0";
+    const isCredit = /\bcr\b/i.test(rawAmt);
+    const amount = parseAmount(rawAmt);
+    const trip = idxDesc>=0 ? String(r[idxDesc]||"").trim() : "";
+    const isFeeOrPayment = /payment|surcharge|video matching fee/i.test(trip);
+    if(isCredit){ skippedCredits++; return null; }
+    if(isFeeOrPayment && !rawTime){ skippedFees++; return null; }
+    if(!rawTime){ skippedNoTime++; return null; }
+    return {
+      i, raw: r, headers,
+      date: parsed.date, time: parsed.time, dt: parsed.dt, day: parsed.dt ? parsed.dt.getDay() : null,
+      tag: idxTag>=0 ? String(r[idxTag]||"").trim() : "",
+      trip,
+      ref: idxRef>=0 ? String(r[idxRef]||"").trim() : "",
+      amount,
+      cls: null, rule: "", override:""
+    };
+  }).filter(t => t && t.dt);
+  window.__lastSkipStats = {skippedFees, skippedCredits, skippedNoTime};
+
+  classifyAll();
+  renderTrips();
+  const s = window.__lastSkipStats || {};
+  const extras = [];
+  if(s.skippedFees) extras.push(`${s.skippedFees} fees`);
+  if(s.skippedCredits) extras.push(`${s.skippedCredits} payments/credits`);
+  if(s.skippedNoTime) extras.push(`${s.skippedNoTime} rows without start time`);
+  setCsvStatus(`Loaded ${state.trips.length} trip${state.trips.length===1?"":"s"}.${extras.length?" Skipped "+extras.join(", ")+".":""} Review below.`, "ok");
+}
+
+function setCsvStatus(msg, kind){
+  const el = document.getElementById("csvStatus");
+  el.className = "small " + (kind||"");
+  el.textContent = msg;
+}
+
+function parseAmount(s){
+  const n = parseFloat(String(s).replace(/[^0-9.\-]/g,""));
+  return isFinite(n) ? n : 0;
+}
+function parseDateTime(d, t){
+  if(!d) return {};
+  const day = d.replace(/[./]/g,"-").trim();
+  let dt = null;
+  const variants = [];
+  const base = day.split(/[\s,T]/)[0];
+  const time = (t || (day.split(/[\sT]/)[1] || "00:00")).trim();
+
+  // "02 Mar 2026" style (Linkt default)
+  const mMon = /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/.exec(day.trim());
+  const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  if(mMon){
+    variants.push([+mMon[3], months[mMon[2]]||0, +mMon[1]]);
+  }
+
+  const mDMY = base.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+  const mYMD = base.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(mYMD){ variants.push([+mYMD[1], +mYMD[2]-1, +mYMD[3]]); }
+  if(mDMY){
+    let y = +mDMY[3]; if(y<100) y += 2000;
+    variants.push([y, +mDMY[2]-1, +mDMY[1]]);
+    variants.push([y, +mDMY[1]-1, +mDMY[2]]);
+  }
+  const tm = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i) || ["", "0","0",""];
+  let hh = +tm[1]||0, mm = +tm[2]||0;
+  if(tm[3] && /PM/i.test(tm[3]) && hh<12) hh+=12;
+  if(tm[3] && /AM/i.test(tm[3]) && hh===12) hh=0;
+  for(const [y,mo,dd] of variants){
+    const cand = new Date(y, mo, dd, hh, mm, 0);
+    if(!isNaN(cand)){ dt = cand; break; }
+  }
+  if(!dt){
+    const cand = new Date(d + " " + (t||""));
+    if(!isNaN(cand)) dt = cand;
+  }
+  if(!dt) return {};
+  const p = n => String(n).padStart(2,"0");
+  return {
+    dt,
+    date: `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`,
+    time: `${p(dt.getHours())}:${p(dt.getMinutes())}`
+  };
+}
+function parseHM(s){ const m = /^(\d{1,2}):(\d{2})/.exec((s||"").trim()); return m ? (+m[1])*60 + (+m[2]) : null; }
+function inRange(mins, startHM, endHM){
+  const s = parseHM(startHM), e = parseHM(endHM);
+  if(s==null||e==null) return false;
+  if(e>=s) return mins>=s && mins<=e;
+  return mins>=s || mins<=e;
+}
+function inWindowStr(mins, winStr){
+  if(!winStr) return false;
+  const parts = winStr.split("-").map(x=>x.trim());
+  if(parts.length!==2) return false;
+  return inRange(mins, parts[0], parts[1]);
+}
+
+function normalizeTag(t){
+  return String(t||"")
+    .toUpperCase()
+    .replace(/\b(QLD|NSW|VIC|TAS|SA|WA|NT|ACT)\b/g, "")
+    .replace(/[\s\-\.]/g, "")
+    .trim();
+}
+function driverFor(tag){
+  const t = normalizeTag(tag);
+  if(!t) return null;
+  // Match against Linkt tag number first, then rego plate — handles both field layouts
+  return state.drivers.find(d => normalizeTag(d.tag) === t)
+      || state.drivers.find(d => normalizeTag(d.rego) === t)
+      || null;
+}
+
+function classifyAll(){
+  state.trips.forEach(trip => {
+    // 1. Manual row-level override always wins
+    if(trip.override){
+      trip.cls = trip.override; trip.rule = "Manual override"; return;
+    }
+    // 2. Driver-level always-work / always-personal rule
+    const drv = driverFor(trip.tag);
+    if(drv && drv.defaultRule === "always-personal"){ trip.cls="personal"; trip.rule="Driver rule: always personal"; return; }
+    if(drv && drv.defaultRule === "always-work"){ trip.cls="work"; trip.rule="Driver rule: always work"; return; }
+
+    // 3. Route rule — deterministic, highest-confidence signal. Matches the
+    //    Linkt trip description (e.g. "Kedron to Bowen Hills") against the
+    //    configured route table. Three possible classes:
+    //      personal  → always personal (e.g. home↔office commute corridor)
+    //      work      → always work (e.g. specific tunnel / known site route)
+    //      commute   → window-aware: personal in AM/PM windows or weekends,
+    //                   work otherwise. Used for motorway-through tolls
+    //                   (Gateway, Logan) that are commute-used during peaks
+    //                   but work-used during the day.
+    const mins = (trip.dt.getHours()*60) + trip.dt.getMinutes();
+    const amWin = state.settings.amCommute, pmWin = state.settings.pmCommute;
+    const inCommute = inWindowStr(mins, amWin) || inWindowStr(mins, pmWin);
+    const day = state.settings.days[trip.day];
+    const isWorkingDay = !!(day && day.on);
+
+    const routeMatch = matchRoute(trip.trip || trip.desc || "");
+    if(routeMatch){
+      if(routeMatch.cls === "work"){
+        trip.cls = "work";
+        trip.rule = "Route rule: " + routeMatch.pattern + " (work site)";
+        return;
+      }
+      if(routeMatch.cls === "personal"){
+        trip.cls = "personal";
+        trip.rule = "Route rule: " + routeMatch.pattern + " (commute)";
+        return;
+      }
+      if(routeMatch.cls === "commute"){
+        // Window-aware: personal inside AM/PM commute windows or on non-working days,
+        // otherwise classified as work.
+        if(!isWorkingDay){
+          trip.cls = "personal";
+          trip.rule = "Route rule: " + routeMatch.pattern + " (motorway — non-working day → personal)";
+          return;
+        }
+        if(inCommute){
+          trip.cls = "personal";
+          trip.rule = "Route rule: " + routeMatch.pattern + " (motorway — in commute window → personal)";
+          return;
+        }
+        trip.cls = "work";
+        trip.rule = "Route rule: " + routeMatch.pattern + " (motorway — outside commute window → work)";
+        return;
+      }
+    }
+
+    // 4. Legacy commute window (disabled by default — route rules are preferred).
+    //    Left in place so payroll can re-enable it for edge cases.
+    if(inCommute && state.settings.commuteRule === "always-personal"){
+      trip.cls="personal"; trip.rule="In commute window"; return;
+    }
+
+    // 5. Time-of-day fallback (weekend / outside working hours → personal).
+    if(!isWorkingDay){ trip.cls="personal"; trip.rule="Non-working day"; return; }
+    if(!inRange(mins, day.start, day.end)){ trip.cls="personal"; trip.rule="Outside working hours"; return; }
+
+    trip.cls = "work"; trip.rule = "Within working hours";
+  });
+  updateKpis();
+}
+function updateKpis(){
+  const n = state.trips.length;
+  const work = state.trips.filter(t=>t.cls==="work").reduce((a,t)=>a+t.amount,0);
+  const pers = state.trips.filter(t=>t.cls==="personal").reduce((a,t)=>a+t.amount,0);
+  const exportBtn = document.getElementById("btnExportXeroProcess");
+  if(exportBtn) exportBtn.disabled = (state.trips.filter(t=>t.cls==="personal").length === 0);
+  const knownTags = state.drivers.map(d=>normalizeTag(d.tag)).filter(Boolean);
+  const knownRegos = state.drivers.map(d=>normalizeTag(d.rego||"")).filter(Boolean);
+  const known = new Set([...knownTags, ...knownRegos]);
+  const unmap = new Set(state.trips.map(t=>normalizeTag(t.tag)).filter(t=>t && !known.has(t))).size;
+  document.getElementById("kTrips").textContent = n||"—";
+  document.getElementById("kWork").textContent = fmt(work);
+  document.getElementById("kPers").textContent = fmt(pers);
+  document.getElementById("kUnmap").textContent = unmap||"0";
+}
+function fmt(n){ return n ? ("$" + n.toFixed(2)) : "$0.00"; }
+
+let tripFilter = "all";
+const tripFilters = { dateFrom:"", dateTo:"", day:"", tag:"", driver:"", q:"" };
+
+function populateFilterDropdowns(){
+  // Tags: union of tags that appear in the current trips + every tag in the driver register.
+  const tagSel = document.getElementById("fltTag");
+  const driverSel = document.getElementById("fltDriver");
+  if(!tagSel || !driverSel) return;
+  const tripTags = new Set(state.trips.map(t=>t.tag).filter(Boolean));
+  state.drivers.forEach(d => { if(d.tag) tripTags.add(d.tag); });
+  const tagList = Array.from(tripTags).sort();
+  const prevTag = tagSel.value;
+  tagSel.innerHTML = '<option value="">Any tag</option>' +
+    tagList.map(t => {
+      const drv = driverFor(t);
+      const lbl = drv && drv.name ? `${t} \u2014 ${drv.name}` : t;
+      return `<option value="${escAttr(t)}">${escAttr(lbl)}</option>`;
+    }).join("");
+  if(prevTag && tagList.includes(prevTag)) tagSel.value = prevTag;
+
+  // Drivers: every named driver in the register.
+  const drivers = state.drivers
+    .filter(d => d.name)
+    .map(d => d.name)
+    .sort((a,b)=>a.localeCompare(b));
+  const uniq = Array.from(new Set(drivers));
+  const prevDrv = driverSel.value;
+  driverSel.innerHTML = '<option value="">Any driver</option>' +
+    uniq.map(n => `<option value="${escAttr(n)}">${escAttr(n)}</option>`).join("");
+  if(prevDrv && uniq.includes(prevDrv)) driverSel.value = prevDrv;
+}
+
+function applyFilters(trips){
+  const f = tripFilters;
+  return trips.filter(t => {
+    if(tripFilter !== "all" && t.cls !== tripFilter) return false;
+    if(f.dateFrom && t.date < f.dateFrom) return false;
+    if(f.dateTo   && t.date > f.dateTo)   return false;
+    if(f.day !== "" && String(t.day) !== f.day) return false;
+    if(f.tag && t.tag !== f.tag) return false;
+    if(f.driver){
+      const drv = driverFor(t.tag);
+      if(!drv || (drv.name||"") !== f.driver) return false;
+    }
+    if(f.q){
+      const needle = f.q.toLowerCase();
+      const hay = [t.trip, t.tag, (driverFor(t.tag)||{}).name||"", t.rule||""].join(" ").toLowerCase();
+      if(!hay.includes(needle)) return false;
+    }
+    return true;
+  });
+}
+
+function filtersActive(){
+  const f = tripFilters;
+  return !!(f.dateFrom || f.dateTo || f.day !== "" || f.tag || f.driver || f.q);
+}
+
+function renderTrips(){
+  const tb = document.querySelector("#tripTable tbody");
+  tb.innerHTML = "";
+  populateFilterDropdowns();
+  const rows = applyFilters(state.trips);
+
+  // counts
+  document.getElementById("cAll").textContent = state.trips.length;
+  document.getElementById("cWork").textContent = state.trips.filter(t=>t.cls==="work").length;
+  document.getElementById("cPers").textContent = state.trips.filter(t=>t.cls==="personal").length;
+
+  // filter summary line
+  const sum = document.getElementById("fltSummary");
+  if(sum){
+    if(state.trips.length === 0){
+      sum.textContent = "";
+    } else if(filtersActive() || tripFilter !== "all"){
+      const amt = rows.reduce((a,t)=>a+t.amount,0);
+      sum.textContent = `Showing ${rows.length} of ${state.trips.length} trips \u2014 ${fmt(amt)}`;
+    } else {
+      sum.textContent = "";
+    }
+  }
+
+  // save-statement card visibility + period suggestion
+  const card = document.getElementById("saveStmtCard");
+  if(state.trips.length){
+    card.style.display = "";
+    const periodIn = document.getElementById("stmtPeriod");
+    if(periodIn && !periodIn.value) periodIn.value = suggestPeriodLabel(state.trips);
+  } else {
+    card.style.display = "none";
+  }
+
+  if(rows.length===0){
+    const why = filtersActive() || tripFilter !== "all" ? "match the current filters" : "loaded yet";
+    tb.innerHTML = `<tr><td colspan="10" class="muted" style="text-align:center;padding:40px">No trips ${why}.</td></tr>`;
+    return;
+  }
+  rows.forEach((t, i) => {
+    const drv = driverFor(t.tag);
+    const tripIdx = state.trips.indexOf(t);
+    const carRate = lookupCarRate(t.trip);
+    const hasOverride = t.carRateOverride != null;
+    const chargeAmt = billableAmount(t);
+    const chargeDisplay = hasOverride
+      ? `<span style="color:var(--warn);font-weight:700" title="Repriced from ${fmt(t.amount)} (LCV) to CAR rate">${fmt(chargeAmt)} <span style="font-size:10px;opacity:.7">CAR</span></span>`
+      : `<span class="muted" style="font-size:11px">—</span>`;
+    const repriceBtn = (t.cls === "personal" && carRate != null)
+      ? `<button class="ghost small reprice-btn" data-idx="${tripIdx}" data-rate="${carRate}" style="padding:4px 8px;font-size:10px;margin-top:4px" title="Set to CAR rate ${fmt(carRate)}">${hasOverride ? "✓ CAR" : "→ CAR"}</button>`
+      : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${t.date}<br><span class="small muted">${t.time}</span></td>
+      <td>${DAY_NAMES[t.day]}</td>
+      <td><span class="pill">${escAttr(t.tag)}</span></td>
+      <td>${drv? escAttr(drv.name||"(unnamed)") : `<span class="small muted">(unmapped)</span>`}</td>
+      <td>${escAttr(t.trip||"")}${repriceBtn}</td>
+      <td style="text-align:right;font-weight:700">${fmt(t.amount)}</td>
+      <td style="text-align:right">${chargeDisplay}</td>
+      <td class="small muted">${escAttr(t.rule)}</td>
+      <td>${t.cls==="work"?'<span class="chip work">Work</span>':'<span class="chip pers">Personal</span>'}</td>
+      <td>
+        <select class="override-sel" data-idx="${tripIdx}">
+          <option value="">(auto)</option>
+          <option value="work" ${t.override==="work"?"selected":""}>Force work</option>
+          <option value="personal" ${t.override==="personal"?"selected":""}>Force personal</option>
+        </select>
+      </td>
+    `;
+    tr.querySelector("select").addEventListener("change", e=>{
+      const idx = +e.target.dataset.idx;
+      state.trips[idx].override = e.target.value;
+      classifyAll(); renderTrips();
+    });
+    const rBtn = tr.querySelector(".reprice-btn");
+    if(rBtn){
+      rBtn.addEventListener("click", ()=>{
+        const idx = +rBtn.dataset.idx;
+        const rate = +rBtn.dataset.rate;
+        // Toggle: if already set to this rate, clear it; otherwise apply it
+        if(state.trips[idx].carRateOverride === rate){
+          state.trips[idx].carRateOverride = null;
+        } else {
+          state.trips[idx].carRateOverride = rate;
+        }
+        renderTrips();
+      });
+    }
+    tb.appendChild(tr);
+  });
+  updateKpis();
+}
+
+/* ------------------------------ file handling ------------------------------ */
+const drop = document.getElementById("drop");
+const fileCsv = document.getElementById("fileCsv");
+document.getElementById("pickFile").onclick = e=>{ e.preventDefault(); fileCsv.click(); };
+drop.ondragover = e=>{ e.preventDefault(); drop.classList.add("drag"); };
+drop.ondragleave = ()=> drop.classList.remove("drag");
+drop.ondrop = e=>{
+  e.preventDefault(); drop.classList.remove("drag");
+  const f = e.dataTransfer.files[0]; if(f) readFile(f);
+};
+fileCsv.onchange = e=>{ const f = e.target.files[0]; if(f) readFile(f); };
+
+function readFile(f){
+  const name = (f.name || "").toLowerCase();
+  const isPdf = name.endsWith(".pdf") || f.type === "application/pdf";
+  if(isPdf){
+    setCsvStatus("Reading PDF statement\u2026", "");
+    const r = new FileReader();
+    r.onload = async ()=>{
+      try {
+        const csv = await pdfToLinktCsv(r.result);
+        if(!csv || csv.split(/\r?\n/).length < 2){
+          setCsvStatus("No trip rows found in this PDF. Is it a Linkt Detailed Statement?", "error");
+          return;
+        }
+        handleCsvText(csv);
+      } catch(err){
+        console.error(err);
+        setCsvStatus("Could not read this PDF: " + (err && err.message ? err.message : err), "error");
+      }
+    };
+    r.onerror = ()=> setCsvStatus("Could not read the selected file.", "error");
+    r.readAsArrayBuffer(f);
+    return;
+  }
+  // default: read as text (CSV, TSV, plain text)
+  const r = new FileReader();
+  r.onload = ()=> handleCsvText(String(r.result));
+  r.onerror = ()=> setCsvStatus("Could not read the selected file.", "error");
+  r.readAsText(f);
+}
+
+/* ---------- PDF \u2192 Linkt CSV ------------------------------
+   Uses pdf.js (loaded lazily from a CDN the first time a PDF is dropped).
+   Reconstructs text lines from the PDF by grouping items on the same y
+   coordinate, then matches Linkt's standard row format:
+     "04 Jan 2026  980KJ7 QLD  LCV  09:39:19  09:39:19  Kedron to Bowen Hills  $10.74"
+   and synthesises a CSV with the headers the existing importer expects
+   (date,time,finish,tag,class,trip,amount,ref). All classification logic
+   is unchanged \u2014 the CSV path is the single source of truth. */
+const PDF_JS_VER = "3.11.174";
+let _pdfJsLoading = null;
+function loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    const existing = Array.from(document.scripts).find(s=>s.src===src);
+    if(existing){ resolve(); return; }
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error("Failed to load "+src));
+    document.head.appendChild(s);
+  });
+}
+async function ensurePdfJs(){
+  if(window.pdfjsLib) return window.pdfjsLib;
+  if(!_pdfJsLoading){
+    _pdfJsLoading = (async ()=>{
+      await loadScriptOnce(`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDF_JS_VER}/pdf.min.js`);
+      try {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDF_JS_VER}/pdf.worker.min.js`;
+      } catch(e){ /* non-fatal; pdf.js will fall back to main-thread parsing */ }
+    })();
+  }
+  await _pdfJsLoading;
+  return window.pdfjsLib;
+}
+const LINKT_ROW_RE = /^\s*(\d{2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\S+)\s+(?:QLD|NSW|VIC|ACT|SA|WA|TAS|NT)\s+(CAR|LCV|HCV|MCY)\s+(\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2})\s+(.+?)\s+\$([\d,]+\.\d{2})\s*$/;
+const LINKT_MONTHS = {Jan:"01",Feb:"02",Mar:"03",Apr:"04",May:"05",Jun:"06",Jul:"07",Aug:"08",Sep:"09",Oct:"10",Nov:"11",Dec:"12"};
+async function pdfToLinktCsv(arrayBuffer){
+  const lib = await ensurePdfJs();
+  const pdf = await lib.getDocument({data: arrayBuffer}).promise;
+  const lines = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    // Group text items by rounded y so we rebuild visual rows; sort each row left-to-right.
+    const rows = new Map();
+    content.items.forEach(it => {
+      if(!it || typeof it.str !== "string") return;
+      const y = Math.round(it.transform[5]);
+      const x = it.transform[4];
+      if(!rows.has(y)) rows.set(y, []);
+      rows.get(y).push({x, s: it.str});
+    });
+    const ys = Array.from(rows.keys()).sort((a,b)=>b-a); // top to bottom
+    for(const y of ys){
+      const parts = rows.get(y).sort((a,b)=>a.x-b.x).map(p=>p.s);
+      // join with a single space; collapse runs of whitespace
+      const line = parts.join(" ").replace(/\s+/g, " ").trim();
+      if(line) lines.push(line);
+    }
+  }
+  const out = [["date","time","finish","tag","class","trip","amount","ref"]];
+  for(const line of lines){
+    const m = line.match(LINKT_ROW_RE);
+    if(!m) continue;
+    const [,d,mo,y,tag,vclass,start,finish,detail,amt] = m;
+    const moNum = LINKT_MONTHS[mo.charAt(0).toUpperCase()+mo.slice(1,3).toLowerCase()];
+    if(!moNum) continue;
+    out.push([
+      `${y}-${moNum}-${d.padStart(2,"0")}`,
+      start.slice(0,5),
+      finish.slice(0,5),
+      tag,
+      vclass,
+      detail.trim(),
+      amt.replace(/,/g,""),
+      ""
+    ]);
+  }
+  // Encode to CSV
+  const esc = v => /[",\n]/.test(v) ? '"'+String(v).replace(/"/g,'""')+'"' : String(v);
+  return out.map(r => r.map(esc).join(",")).join("\n");
+}
+
+document.getElementById("btnReclassify").onclick = ()=>{ classifyAll(); renderTrips(); };
+
+document.getElementById("btnExportXeroProcess").addEventListener("click", ()=>{
+  const pers = state.trips.filter(t => t.cls === "personal");
+  if(!pers.length){ alert("No personal trips to export."); return; }
+  const rows = buildXeroRows(pers);
+  if(!rows.length){ alert("Nothing to export."); return; }
+  const csv = rowsToCsv(rows);
+  const today = new Date().toISOString().slice(0,10);
+  downloadBlob(new Blob([csv],{type:"text/csv"}), `xero-personal-tolls-${today}.csv`);
+});
+
+document.getElementById("btnRepriceAll").addEventListener("click", ()=>{
+  let count = 0;
+  state.trips.forEach(t => {
+    if(t.cls !== "personal") return;
+    const rate = lookupCarRate(t.trip);
+    if(rate != null && t.carRateOverride == null){ t.carRateOverride = rate; count++; }
+  });
+  renderTrips();
+  if(count === 0) alert("No personal LCV trips found that match a known toll point, or all are already repriced.");
+  else alert(`Repriced ${count} personal trip${count===1?"":"s"} to CAR rate.`);
+});
+
+document.getElementById("btnClearReprice").addEventListener("click", ()=>{
+  state.trips.forEach(t => { t.carRateOverride = null; });
+  renderTrips();
+});
+document.getElementById("btnClear").onclick = ()=>{
+  state.trips=[]; state.loadedStatementId=null;
+  document.getElementById("stmtPeriod").value = "";
+  document.getElementById("stmtNotes").value = "";
+  renderTrips(); setCsvStatus("","");
+};
+document.querySelectorAll("#tripFilter button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("#tripFilter button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    tripFilter = b.dataset.filter;
+    const st = document.getElementById("tripFilter");
+    st.classList.remove("work","pers");
+    if(tripFilter==="work") st.classList.add("work");
+    if(tripFilter==="personal") st.classList.add("pers");
+    renderTrips();
+  };
+});
+
+/* ------------------------------ trip filter controls ------------------------------ */
+(function wireTripFilters(){
+  const bind = (id, key, ev="input") => {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener(ev, ()=>{ tripFilters[key] = el.value; renderTrips(); });
+  };
+  bind("fltDateFrom", "dateFrom", "change");
+  bind("fltDateTo",   "dateTo",   "change");
+  bind("fltDay",      "day",      "change");
+  bind("fltTag",      "tag",      "change");
+  bind("fltDriver",   "driver",   "change");
+  bind("fltQ",        "q",        "input");
+  const btn = document.getElementById("btnClearFilters");
+  if(btn) btn.onclick = ()=>{
+    Object.keys(tripFilters).forEach(k => tripFilters[k] = "");
+    ["fltDateFrom","fltDateTo","fltDay","fltTag","fltDriver","fltQ"].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = "";
+    });
+    renderTrips();
+  };
+})();
+
+/* ------------------------------ config export/import ------------------------------ */
+document.getElementById("btnExportConfig").onclick = ()=>{
+  const blob = new Blob([JSON.stringify({
+    drivers:state.drivers, settings:state.settings, mapping:state.mapping,
+    exportedAt:new Date().toISOString(), tool:"linkt-toll-allocator"
+  }, null, 2)], {type:"application/json"});
+  downloadBlob(blob, "linkt-toll-allocator-config.json");
+};
+document.getElementById("btnImportConfig").onclick = ()=> document.getElementById("fileConfig").click();
+document.getElementById("fileConfig").onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const d = JSON.parse(String(r.result));
+      if(d.drivers) state.drivers = d.drivers;
+      if(d.settings) state.settings = Object.assign(state.settings, d.settings);
+      if(d.mapping) state.mapping = Object.assign(state.mapping, d.mapping);
+      renderDrivers(); renderDays(); bindSettings();
+      if(state.trips.length){ classifyAll(); renderTrips(); }
+      save();
+      alert("Config loaded.");
+    }catch(err){ alert("Could not read config file."); }
+  };
+  r.readAsText(f);
+};
+
+function downloadBlob(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ------------------------------ Xero export ------------------------------ */
+/* Core builder — accepts any array of personal trips, returns Xero CSV rows */
+function buildXeroRows(pers){
+  const x = state.settings.xero;
+  const today = new Date();
+  const p = n => String(n).padStart(2,"0");
+  const fmtDate = d => `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  const due = new Date(today); due.setDate(due.getDate() + (+x.due||0));
+
+  const byDriver = new Map();
+  pers.forEach(t=>{
+    const drv = driverFor(t.tag) || driverFor(t.rego||"") || {tag:t.tag, name:`(unmapped tag ${t.tag})`, xeroContact:"", email:"", accountCode:""};
+    const key = drv.xeroContact || drv.name || drv.tag || "(unknown)";
+    if(!byDriver.has(key)) byDriver.set(key, {drv, trips:[]});
+    byDriver.get(key).trips.push(t);
+  });
+
+  const rows = [];
+  let invSeq = 1;
+  const periodEnd = pers.reduce((a,t)=>(t.date>a?t.date:a), "0000-00-00");
+  const periodEndFmt = periodEnd === "0000-00-00" ? fmtDate(today) : fmtDate(new Date(periodEnd));
+
+  byDriver.forEach(({drv, trips})=>{
+    const invNum = `${x.prefix||""}${periodEnd.replace(/-/g,"")}-${String(invSeq).padStart(3,"0")}`;
+    invSeq++;
+    const contact = drv.xeroContact || drv.name || `Tag ${drv.tag}`;
+    const email = drv.email || "";
+    const acct = drv.accountCode || x.account;
+
+    if(x.group === "per-driver"){
+      const total = trips.reduce((a,t)=>a+billableAmount(t), 0);
+      rows.push({
+        ContactName: contact, EmailAddress: email,
+        InvoiceNumber: invNum, Reference: `Personal tolls to ${periodEndFmt}`,
+        InvoiceDate: fmtDate(today), DueDate: fmtDate(due),
+        Description: `Personal toll recovery - ${trips.length} trip${trips.length>1?"s":""} to ${periodEndFmt}`,
+        Quantity: "1", UnitAmount: total.toFixed(2),
+        AccountCode: acct, TaxType: x.tax
+      });
+    } else {
+      trips.forEach(t=>{
+        const desc = (x.desc||"Personal toll {date} {time} — {trip} ({tag})")
+          .replace("{date}", t.date).replace("{time}", t.time)
+          .replace("{trip}", t.trip||"").replace("{tag}", t.tag||"")
+          .replace("{driver}", drv.name||"").replace("{amount}", billableAmount(t).toFixed(2));
+        rows.push({
+          ContactName: contact, EmailAddress: email,
+          InvoiceNumber: invNum, Reference: `Personal tolls to ${periodEndFmt}`,
+          InvoiceDate: fmtDate(today), DueDate: fmtDate(due),
+          Description: desc,
+          Quantity: "1", UnitAmount: billableAmount(t).toFixed(2),
+          AccountCode: acct, TaxType: x.tax
+        });
+      });
+    }
+  });
+  return rows;
+}
+
+/* buildXero kept for potential future use but no longer wired to a tab */
+
+function rowsToCsv(rows){
+  if(rows.length===0) return "";
+  const headers = Object.keys(rows[0]);
+  const esc = v => { const s = String(v==null?"":v); return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+  return [headers.join(",")].concat(rows.map(r => headers.map(h=>esc(r[h])).join(","))).join("\r\n");
+}
+
+
+
+/* ------------------------------ statements ------------------------------ */
+function suggestPeriodLabel(trips){
+  if(!trips.length) return "";
+  const dates = trips.map(t=>t.date).filter(Boolean).sort();
+  const first = dates[0], last = dates[dates.length-1];
+  if(!first || !last) return "";
+  const MONS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const [y1,m1] = first.split("-"), [y2,m2] = last.split("-");
+  if(y1===y2 && m1===m2) return `${MONS[(+m1)-1]} ${y1}`;
+  if(y1===y2) return `${MONS[(+m1)-1]}–${MONS[(+m2)-1]} ${y1}`;
+  return `${MONS[(+m1)-1]} ${y1} – ${MONS[(+m2)-1]} ${y2}`;
+}
+function computeSummary(trips){
+  const workTrips = trips.filter(t=>t.cls==="work");
+  const persTrips = trips.filter(t=>t.cls==="personal");
+  return {
+    tripCount: trips.length,
+    workCount: workTrips.length,
+    personalCount: persTrips.length,
+    workTotal: workTrips.reduce((a,t)=>a+t.amount,0),
+    personalTotal: persTrips.reduce((a,t)=>a+t.amount,0)
+  };
+}
+function sanitizeFilenameBit(s){
+  return String(s||"").replace(/[^a-z0-9\-]+/gi,"-").replace(/^-+|-+$/g,"") || "statement";
+}
+async function writeStatementToFolder(stmt){
+  if(!folderHandle) return;
+  if(!(await ensurePermission(folderHandle,"readwrite"))) return;
+  try{
+    const sub = await folderHandle.getDirectoryHandle("statements", {create:true});
+    const base = sanitizeFilenameBit(stmt.period);
+    // JSON (full detail)
+    const jh = await sub.getFileHandle(`${base}.json`, {create:true});
+    const jw = await jh.createWritable();
+    await jw.write(JSON.stringify(stmt, null, 2));
+    await jw.close();
+    // CSV (trip-level)
+    const ch = await sub.getFileHandle(`${base}.csv`, {create:true});
+    const cw = await ch.createWritable();
+    await cw.write(tripsToCsv(stmt.trips));
+    await cw.close();
+  }catch(e){ console.warn("Statement folder-save failed:", e); }
+}
+function tripsToCsv(trips){
+  const headers = ["Date","Time","Day","Tag","Driver","Trip","Linkt Amount","CAR Rate Override","Charge","Class","Rule","Override"];
+  const lines = [headers.join(",")];
+  const esc = v => { const s = String(v==null?"":v); return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+  trips.forEach(t=>{
+    const drv = driverFor(t.tag);
+    lines.push([
+      t.date, t.time, DAY_NAMES[t.day]||"", t.tag,
+      drv ? (drv.name||drv.xeroContact||"") : "",
+      t.trip, t.amount.toFixed(2), t.carRateOverride != null ? t.carRateOverride.toFixed(2) : "", billableAmount(t).toFixed(2), t.cls, t.rule, t.override||""
+    ].map(esc).join(","));
+  });
+  return lines.join("\r\n");
+}
+async function saveStatementNow(){
+  if(!state.trips.length){ alert("Load a CSV first."); return; }
+  const period = (document.getElementById("stmtPeriod").value || suggestPeriodLabel(state.trips) || "Untitled").trim();
+  const notes = document.getElementById("stmtNotes").value.trim();
+  const dates = state.trips.map(t=>t.date).filter(Boolean).sort();
+  const stmt = {
+    id: state.loadedStatementId || ("stmt-" + Date.now()),
+    period,
+    notes,
+    periodStart: dates[0] || null,
+    periodEnd: dates[dates.length-1] || null,
+    savedAt: new Date().toISOString(),
+    trips: state.trips.map(t => ({
+      date:t.date, time:t.time, dt:t.dt ? t.dt.toISOString() : null, day:t.day,
+      tag:t.tag, trip:t.trip, ref:t.ref, amount:t.amount,
+      cls:t.cls, rule:t.rule, override:t.override,
+      carRateOverride: t.carRateOverride != null ? t.carRateOverride : null
+    })),
+    summary: computeSummary(state.trips),
+    settingsSnapshot: {
+      days: JSON.parse(JSON.stringify(state.settings.days)),
+      commuteRule: state.settings.commuteRule,
+      amCommute: state.settings.amCommute,
+      pmCommute: state.settings.pmCommute,
+      routes: JSON.parse(JSON.stringify(state.settings.routes || []))
+    }
+  };
+  await putStatement(stmt);
+  state.loadedStatementId = stmt.id;
+  await writeStatementToFolder(stmt);
+  await refreshStatementsList();
+  alert(`Statement "${period}" saved to archive.`);
+}
+async function refreshStatementsList(){
+  state.statements = await getAllStatements();
+
+  // Derive the best available end-date for a statement, falling back to
+  // scanning the trips array so old statements without periodEnd still sort correctly.
+  function bestEndDate(s){
+    if(s.periodEnd) return s.periodEnd;
+    if(s.periodStart) return s.periodStart;
+    // Scan trips for the latest date
+    const trips = s.trips || [];
+    if(trips.length){
+      const dates = trips.map(t => t.date || (t.dt ? t.dt.slice(0,10) : "")).filter(Boolean);
+      if(dates.length) return dates.reduce((a,b) => b > a ? b : a, "");
+    }
+    return s.savedAt || "";
+  }
+
+  state.statements.sort((a,b)=> {
+    const da = bestEndDate(a);
+    const db = bestEndDate(b);
+    if(db > da) return 1;
+    if(db < da) return -1;
+    return 0;
+  });
+  renderStatements();
+}
+/* Statement filter state */
+const stmtFilters = { from:"", to:"", q:"" };
+/* Selected statement IDs */
+const stmtSelected = new Set();
+
+function applyStmtFilters(statements){
+  return statements.filter(s => {
+    const end = s.periodEnd || s.periodStart || s.savedAt || "";
+    const start = s.periodStart || s.savedAt || "";
+    if(stmtFilters.from && end < stmtFilters.from) return false;
+    if(stmtFilters.to   && start > stmtFilters.to)  return false;
+    if(stmtFilters.q){
+      const q = stmtFilters.q.toLowerCase();
+      if(!(s.period||"").toLowerCase().includes(q) &&
+         !(s.notes||"").toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function updateSelectionBar(){
+  const bar = document.getElementById("stmtsSelectionBar");
+  const selStmts = state.statements.filter(s => stmtSelected.has(s.id));
+  if(selStmts.length === 0){
+    bar.style.display = "none";
+    return;
+  }
+  bar.style.display = "flex";
+  const totalPers = selStmts.reduce((a,s)=>{
+    const sum = s.summary || computeSummary(s.trips||[]);
+    return a + (sum.personalTotal||0);
+  }, 0);
+  const totalTrips = selStmts.reduce((a,s)=>{
+    const sum = s.summary || computeSummary(s.trips||[]);
+    return a + (sum.personalCount||0);
+  }, 0);
+  document.getElementById("stmtsSelCount").textContent =
+    `${selStmts.length} statement${selStmts.length===1?"":"s"} selected`;
+  document.getElementById("stmtsSelSummary").textContent =
+    `${totalTrips} personal trip${totalTrips===1?"":"s"} · ${fmt(totalPers)} to invoice`;
+}
+
+function renderStatements(){
+  const host = document.getElementById("statementsList");
+  if(!host) return;
+  if(!state.statements.length){
+    host.innerHTML = `<div class="stmt-empty">No statements saved yet. Load a CSV in <strong>Process</strong>, then click <strong>Save to archive</strong>.</div>`;
+    updateSelectionBar();
+    return;
+  }
+  const visible = applyStmtFilters(state.statements);
+  host.innerHTML = "";
+  if(!visible.length){
+    host.innerHTML = `<div class="stmt-empty">No statements match the current filters.</div>`;
+    updateSelectionBar();
+    return;
+  }
+  visible.forEach(s=>{
+    const sum = s.summary || computeSummary(s.trips||[]);
+    const saved = new Date(s.savedAt).toLocaleString();
+    const rangeText = (s.periodStart && s.periodEnd) ? `${s.periodStart} → ${s.periodEnd}` : "";
+    const isSelected = stmtSelected.has(s.id);
+    const el = document.createElement("div");
+    el.className = "stmt-card" + (isSelected ? " stmt-selected" : "");
+    el.style.cursor = "pointer";
+    el.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="padding-top:4px">
+          <input type="checkbox" class="stmt-chk" data-id="${escAttr(s.id)}"
+            ${isSelected?"checked":""} style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)" />
+        </div>
+        <div style="flex:1">
+          <div class="meta">
+            <div class="period">${escAttr(s.period||"(no period)")}</div>
+            <div class="saved-at">Saved ${escAttr(saved)}</div>
+          </div>
+          <div class="small muted" style="margin-top:4px">${escAttr(rangeText)}${s.notes?` · ${escAttr(s.notes)}`:""}</div>
+          <div class="stats">
+            <div class="stat"><div class="k">Trips</div><div class="v">${sum.tripCount}</div></div>
+            <div class="stat"><div class="k">Work</div><div class="v ok">${fmt(sum.workTotal)}</div></div>
+            <div class="stat"><div class="k">Personal</div><div class="v bad">${fmt(sum.personalTotal)}</div></div>
+            <div class="stat"><div class="k">Total</div><div class="v">${fmt(sum.workTotal+sum.personalTotal)}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button data-act="open" data-id="${escAttr(s.id)}">Reopen</button>
+        <button class="secondary" data-act="csv" data-id="${escAttr(s.id)}">Download CSV</button>
+        <button class="secondary" data-act="json" data-id="${escAttr(s.id)}">Download JSON</button>
+        <button class="danger" data-act="del" data-id="${escAttr(s.id)}">Delete</button>
+      </div>
+    `;
+    // Checkbox toggle
+    const chk = el.querySelector(".stmt-chk");
+    chk.addEventListener("change", e => {
+      e.stopPropagation();
+      if(chk.checked) stmtSelected.add(s.id);
+      else stmtSelected.delete(s.id);
+      el.classList.toggle("stmt-selected", chk.checked);
+      updateSelectionBar();
+    });
+    // Clicking the card (not buttons) also toggles selection
+    el.addEventListener("click", e => {
+      if(e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+      chk.checked = !chk.checked;
+      chk.dispatchEvent(new Event("change"));
+    });
+    el.querySelectorAll("button[data-act]").forEach(b=>{
+      b.addEventListener("click", e => {
+        e.stopPropagation();
+        handleStatementAction(b.dataset.act, b.dataset.id);
+      });
+    });
+    host.appendChild(el);
+  });
+  updateSelectionBar();
+}
+async function handleStatementAction(act, id){
+  const s = state.statements.find(x=>x.id===id);
+  if(!s) return;
+  if(act==="open"){
+    state.trips = (s.trips||[]).map(t => ({
+      ...t,
+      dt: t.dt ? new Date(t.dt) : null,
+      carRateOverride: t.carRateOverride != null ? t.carRateOverride : null
+    }));
+    state.loadedStatementId = s.id;
+    document.getElementById("stmtPeriod").value = s.period || "";
+    document.getElementById("stmtNotes").value = s.notes || "";
+    // Re-classify against CURRENT rules so updates to route rules / working
+    // hours / driver rules take effect when an old statement is reopened.
+    // classifyAll() still honours trip.override, so manual overrides are preserved.
+    classifyAll();
+    renderTrips();
+    updateKpis();
+    setCsvStatus(`Reopened "${s.period}" — ${s.summary.tripCount} trip${s.summary.tripCount===1?"":"s"}.`, "ok");
+    setActiveTab("process");
+    document.querySelector('section[data-panel="process"]').scrollIntoView({behavior:"smooth", block:"start"});
+  } else if(act==="csv"){
+    const csv = tripsToCsv(s.trips||[]);
+    downloadBlob(new Blob([csv], {type:"text/csv"}), `linkt-${sanitizeFilenameBit(s.period)}.csv`);
+  } else if(act==="json"){
+    downloadBlob(new Blob([JSON.stringify(s,null,2)], {type:"application/json"}), `linkt-${sanitizeFilenameBit(s.period)}.json`);
+  } else if(act==="del"){
+    if(!confirm(`Delete statement "${s.period}"? This cannot be undone.`)) return;
+    await deleteStatementDb(id);
+    if(state.loadedStatementId === id) state.loadedStatementId = null;
+    await refreshStatementsList();
+  }
+}
+
+document.getElementById("btnSaveStatement").addEventListener("click", saveStatementNow);
+
+/* ------------------------------ statement archive — bulk export / import ------------------------------ */
+/* The statements archive lives in the browser's IndexedDB, which is scoped per
+   origin. When this app is moved between URLs (e.g. file:// → GitHub Pages, or
+   between two different hosts), the archive doesn't follow automatically.
+   These two buttons let payroll carry the archive across by exporting every
+   saved statement as a single JSON bundle and importing it at the new URL. */
+
+/* ----- Statements filter + selection wiring ----- */
+(function wireStmtFilters(){
+  const bind = (id, key, ev="input") => {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener(ev, ()=>{ stmtFilters[key] = el.value; renderStatements(); });
+  };
+  bind("stmtFltFrom", "from", "change");
+  bind("stmtFltTo",   "to",   "change");
+  bind("stmtFltQ",    "q",    "input");
+  document.getElementById("btnStmtClearFlt").addEventListener("click", ()=>{
+    stmtFilters.from = ""; stmtFilters.to = ""; stmtFilters.q = "";
+    document.getElementById("stmtFltFrom").value = "";
+    document.getElementById("stmtFltTo").value = "";
+    document.getElementById("stmtFltQ").value = "";
+    renderStatements();
+  });
+  document.getElementById("btnSelectAll").addEventListener("click", ()=>{
+    applyStmtFilters(state.statements).forEach(s => stmtSelected.add(s.id));
+    renderStatements();
+  });
+  document.getElementById("btnSelectNone").addEventListener("click", ()=>{
+    stmtSelected.clear();
+    renderStatements();
+  });
+  document.getElementById("btnDownloadSelSummary").addEventListener("click", ()=>{
+    const selStmts = state.statements.filter(s => stmtSelected.has(s.id));
+    if(!selStmts.length){ alert("No statements selected."); return; }
+    const byDriver = new Map();
+    selStmts.forEach(s => {
+      (s.trips||[]).forEach(t => {
+        const drv = driverFor(t.tag);
+        const key = drv ? (drv.name||drv.xeroContact||`Tag ${drv.tag}`) : `Unmapped ${t.tag||""}`;
+        const row = byDriver.get(key) || {Driver:key, Tag:t.tag, WorkTrips:0, PersonalTrips:0, WorkAmount:0, PersonalAmount:0, ChargeAmount:0};
+        if(t.cls==="work"){ row.WorkTrips++; row.WorkAmount += t.amount; }
+        else { row.PersonalTrips++; row.PersonalAmount += t.amount; row.ChargeAmount += billableAmount(t); }
+        byDriver.set(key, row);
+      });
+    });
+    const summary = [];
+    byDriver.forEach(v=>{
+      v.WorkAmount = v.WorkAmount.toFixed(2);
+      v.PersonalAmount = v.PersonalAmount.toFixed(2);
+      v.ChargeAmount = v.ChargeAmount.toFixed(2);
+      summary.push(v);
+    });
+    const csv = rowsToCsv(summary);
+    const today = new Date().toISOString().slice(0,10);
+    downloadBlob(new Blob([csv],{type:"text/csv"}), `toll-summary-${today}.csv`);
+  });
+
+  document.getElementById("btnExportSelectedXero").addEventListener("click", ()=>{
+    const selStmts = state.statements.filter(s => stmtSelected.has(s.id));
+    if(!selStmts.length){ alert("No statements selected."); return; }
+    // Combine all personal trips from selected statements
+    const allTrips = [];
+    selStmts.forEach(s => {
+      (s.trips||[]).forEach(t => {
+        if(t.cls === "personal") allTrips.push({
+          ...t,
+          dt: t.dt ? new Date(t.dt) : null
+        });
+      });
+    });
+    if(!allTrips.length){ alert("No personal trips found in the selected statements."); return; }
+    const rows = buildXeroRows(allTrips);
+    if(!rows.length){ alert("Nothing to export."); return; }
+    const csv = rowsToCsv(rows);
+    const periods = selStmts.map(s=>s.period||"").filter(Boolean).join(", ");
+    const today = new Date().toISOString().slice(0,10);
+    downloadBlob(new Blob([csv],{type:"text/csv"}), `xero-tolls-${today}.csv`);
+  });
+})();
+
+document.getElementById("btnStmtsExportAll").addEventListener("click", async () => {
+  const all = await getAllStatements();
+  if(!all.length){ alert("No saved statements to export yet."); return; }
+  const bundle = {
+    kind: "linkt-toll-allocator-statements",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    sourceBuild: BUILD_VERSION,
+    count: all.length,
+    statements: all
+  };
+  const today = new Date().toISOString().slice(0,10);
+  downloadBlob(new Blob([JSON.stringify(bundle, null, 2)], {type:"application/json"}),
+               `linkt-statements-archive-${today}.json`);
+});
+
+document.getElementById("btnStmtsImport").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("stmtsImportInput").click();
+});
+
+document.getElementById("stmtsImportInput").addEventListener("change", (e) => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = ""; // allow re-selecting the same file next time
+  if(files.length) importStatementFiles(files);
+});
+
+// Drag-and-drop on the drop zone above the archive list.
+const stmtsDrop = document.getElementById("stmtsDrop");
+// Clicking anywhere in the drop zone (not just the "browse…" link) also opens picker.
+stmtsDrop.addEventListener("click", (e) => {
+  if(e.target.tagName === "A" || e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+  document.getElementById("stmtsImportInput").click();
+});
+stmtsDrop.addEventListener("dragover", (e) => { e.preventDefault(); stmtsDrop.classList.add("drag"); });
+stmtsDrop.addEventListener("dragleave", () => stmtsDrop.classList.remove("drag"));
+stmtsDrop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  stmtsDrop.classList.remove("drag");
+  const files = Array.from(e.dataTransfer.files || []);
+  if(files.length) importStatementFiles(files);
+});
+
+async function importStatementFiles(files){
+  let toImport = [];
+  for(const f of files){
+    // Quietly skip anything that isn't JSON so other file types (e.g. a CSV
+    // accidentally dropped here) don't throw a parse error.
+    const name = (f.name || "").toLowerCase();
+    const looksJson = name.endsWith(".json") || f.type === "application/json" || f.type === "text/json";
+    if(!looksJson){
+      alert(`Skipping "${f.name}" — the archive importer only accepts .json files. To import a new Linkt statement CSV/PDF, use the Process tab instead.`);
+      continue;
+    }
+    try{
+      const txt = await f.text();
+      const parsed = JSON.parse(txt);
+      // Accept three shapes:
+      //   1. Bundle: { kind: "linkt-toll-allocator-statements", statements: [...] }
+      //   2. Array:  [ {id, trips, ...}, ... ]
+      //   3. Single: { id, trips, ... }
+      if(parsed && parsed.kind === "linkt-toll-allocator-statements" && Array.isArray(parsed.statements)){
+        toImport = toImport.concat(parsed.statements);
+      } else if(Array.isArray(parsed)){
+        toImport = toImport.concat(parsed);
+      } else if(parsed && parsed.id && Array.isArray(parsed.trips)){
+        toImport.push(parsed);
+      } else {
+        alert(`Skipping "${f.name}" — not a recognised Linkt Toll Allocator statement file.`);
+      }
+    } catch(err){
+      alert(`Could not read "${f.name}": ${err.message}`);
+    }
+  }
+  if(!toImport.length) return;
+
+  // Check for id collisions against the existing archive and ask before overwriting.
+  const existing = await getAllStatements();
+  const existingIds = new Set(existing.map(s => s.id));
+  const collisions = toImport.filter(s => existingIds.has(s.id));
+  let overwrite = true;
+  if(collisions.length){
+    overwrite = confirm(
+      `${collisions.length} of the ${toImport.length} statements you're importing already exist in this archive ` +
+      `(matching by id). Click OK to overwrite them with the imported copy, or Cancel to skip them and only import the new ones.`
+    );
+  }
+
+  let imported = 0, skipped = 0;
+  for(const s of toImport){
+    if(!s || !s.id){ skipped++; continue; }
+    if(existingIds.has(s.id) && !overwrite){ skipped++; continue; }
+    try{
+      await putStatement(s);
+      imported++;
+    }catch(err){
+      console.error("Failed to import statement", s.id, err);
+      skipped++;
+    }
+  }
+  await refreshStatementsList();
+  alert(`Imported ${imported} statement${imported===1?"":"s"}${skipped?` — skipped ${skipped}`:""}.`);
+}
+
+/* ------------------------------ init ------------------------------ */
+load();
+/* Backfill sensible commute-window defaults if this install predates window-aware
+   "commute"-class route rules (which need amCommute / pmCommute to do their job). */
+(function backfillCommuteWindows(){
+  const s = state.settings;
+  let changed = false;
+  if(!s.amCommute || !/\d\d:\d\d\s*-\s*\d\d:\d\d/.test(s.amCommute)){ s.amCommute = "06:00-09:30"; changed = true; }
+  if(!s.pmCommute || !/\d\d:\d\d\s*-\s*\d\d:\d\d/.test(s.pmCommute)){ s.pmCommute = "15:00-18:30"; changed = true; }
+  if(changed){ try{ save(); }catch(e){} }
+})();
+seedOrBackfillDrivers();
+
+/* Migration: if a driver has a value in `tag` but nothing in `rego`, move it to `rego`
+   and clear `tag` — the old field held rego/registration values from Linkt, not
+   transponder IDs. The transponder number can then be entered separately.
+   Runs once; after migration tag will be blank until the user fills in the transponder. */
+(function migrateTagToRego(){
+  let changed = false;
+  state.drivers.forEach(d => {
+    if(d.tag && !d.rego){
+      d.rego = d.tag;
+      d.tag  = "";
+      changed = true;
+    }
+  });
+  if(changed){ try{ save(); }catch(e){} }
+})();
+seedRoutes();
+renderDays();
+wireRouteButtons();
+bindSettings();
+renderDrivers();
+// Re-classify any saved trips against the current rules so a migrated
+// route table (or a bumped classifier) immediately updates existing rows.
+// classifyAll() preserves manual overrides, so this is safe on every load.
+if(state.trips && state.trips.length){ classifyAll(); }
+renderTrips();
+setActiveTab("process");
+initFolderAutoSave();
+refreshStatementsList();
+</script>
+
+</body>
+</html>
